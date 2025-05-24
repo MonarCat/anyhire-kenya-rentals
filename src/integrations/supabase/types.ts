@@ -9,7 +9,315 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          parent_id: string | null
+          slug: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          parent_id?: string | null
+          slug: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          ad_type: string | null
+          address: string | null
+          booking_count: number | null
+          category_id: string
+          condition: string
+          created_at: string
+          description: string
+          features: Json | null
+          id: string
+          images: Json | null
+          included_items: Json | null
+          is_available: boolean | null
+          is_featured: boolean | null
+          latitude: number | null
+          location: string
+          longitude: number | null
+          min_rental_period: string | null
+          price: number
+          price_period: string
+          rating: number | null
+          review_count: number | null
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          ad_type?: string | null
+          address?: string | null
+          booking_count?: number | null
+          category_id: string
+          condition: string
+          created_at?: string
+          description: string
+          features?: Json | null
+          id?: string
+          images?: Json | null
+          included_items?: Json | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          min_rental_period?: string | null
+          price: number
+          price_period: string
+          rating?: number | null
+          review_count?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          ad_type?: string | null
+          address?: string | null
+          booking_count?: number | null
+          category_id?: string
+          condition?: string
+          created_at?: string
+          description?: string
+          features?: Json | null
+          id?: string
+          images?: Json | null
+          included_items?: Json | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          min_rental_period?: string | null
+          price?: number
+          price_period?: string
+          rating?: number | null
+          review_count?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          location: string | null
+          phone: string | null
+          rating: number | null
+          response_time: unknown | null
+          review_count: number | null
+          updated_at: string | null
+          username: string | null
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          location?: string | null
+          phone?: string | null
+          rating?: number | null
+          response_time?: unknown | null
+          review_count?: number | null
+          updated_at?: string | null
+          username?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          location?: string | null
+          phone?: string | null
+          rating?: number | null
+          response_time?: unknown | null
+          review_count?: number | null
+          updated_at?: string | null
+          username?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      Submissions: {
+        Row: {
+          contact: string | null
+          id: string
+          id_upload_path: string | null
+          kra_pin: string | null
+          other_documents_path: string | null
+          service_decription: string
+          service_type: string
+        }
+        Insert: {
+          contact?: string | null
+          id?: string
+          id_upload_path?: string | null
+          kra_pin?: string | null
+          other_documents_path?: string | null
+          service_decription: string
+          service_type: string
+        }
+        Update: {
+          contact?: string | null
+          id?: string
+          id_upload_path?: string | null
+          kra_pin?: string | null
+          other_documents_path?: string | null
+          service_decription?: string
+          service_type?: string
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          ad_type: string | null
+          created_at: string
+          currency: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          item_limit: number | null
+          name: string
+          price: number
+          sort_order: number | null
+          stripe_price_id: string | null
+        }
+        Insert: {
+          ad_type?: string | null
+          created_at?: string
+          currency?: string | null
+          features?: Json | null
+          id: string
+          is_active?: boolean | null
+          item_limit?: number | null
+          name: string
+          price: number
+          sort_order?: number | null
+          stripe_price_id?: string | null
+        }
+        Update: {
+          ad_type?: string | null
+          created_at?: string
+          currency?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          item_limit?: number | null
+          name?: string
+          price?: number
+          sort_order?: number | null
+          stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_id: string
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id?: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

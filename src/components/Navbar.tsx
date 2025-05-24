@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +29,8 @@ const Navbar = () => {
     'Electronics', 'Vehicles', 'Tools & Equipment', 'Furniture', 
     'Sports & Outdoor', 'Events & Party', 'Fashion', 'Books & Media'
   ];
+
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -80,7 +82,7 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                       <User className="w-4 h-4" />
-                      <span className="hidden md:block">{user.full_name || user.email}</span>
+                      <span className="hidden md:block">{displayName}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
