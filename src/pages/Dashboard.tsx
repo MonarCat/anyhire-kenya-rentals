@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { currentPlan, userItemCount } = useSubscription();
 
   const mockStats = {
@@ -92,6 +92,8 @@ const Dashboard = () => {
     );
   }
 
+  const displayName = profile?.full_name || user.email?.split('@')[0] || 'User';
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -99,7 +101,7 @@ const Dashboard = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-gray-600 mt-1">Welcome back, {user.full_name || user.email}</p>
+            <p className="text-gray-600 mt-1">Welcome back, {displayName}</p>
           </div>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Button asChild className="bg-green-600 hover:bg-green-700">

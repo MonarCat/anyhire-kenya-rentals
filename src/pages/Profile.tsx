@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +58,8 @@ const Profile = () => {
     }
   };
 
+  const displayName = profile?.full_name || user.email?.split('@')[0] || 'User';
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
@@ -65,9 +67,9 @@ const Profile = () => {
           <CardHeader className="text-center">
             <div className="relative inline-block">
               <Avatar className="w-24 h-24 mx-auto">
-                <AvatarImage src={user.avatar_url} alt={user.full_name || user.email} />
+                <AvatarImage src={profile?.avatar_url} alt={displayName} />
                 <AvatarFallback className="text-2xl">
-                  {(user.full_name || user.email).charAt(0).toUpperCase()}
+                  {displayName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <Button
@@ -91,7 +93,7 @@ const Profile = () => {
                   <Input
                     id="full_name"
                     name="full_name"
-                    defaultValue={user.full_name || ''}
+                    defaultValue={profile?.full_name || ''}
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -112,7 +114,7 @@ const Profile = () => {
                   <Input
                     id="phone"
                     name="phone"
-                    defaultValue={user.phone || ''}
+                    defaultValue={profile?.phone || ''}
                     placeholder="+254 700 000 000"
                   />
                 </div>
@@ -122,7 +124,7 @@ const Profile = () => {
                   <Input
                     id="location"
                     name="location"
-                    defaultValue={user.location || ''}
+                    defaultValue={profile?.location || ''}
                     placeholder="Nairobi, Kenya"
                   />
                 </div>
@@ -151,34 +153,34 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {user.full_name && (
+                  {profile?.full_name && (
                     <div className="flex items-center space-x-3">
                       <div className="w-5 h-5 text-gray-400 flex items-center justify-center">
                         👤
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-medium">{user.full_name}</p>
+                        <p className="font-medium">{profile.full_name}</p>
                       </div>
                     </div>
                   )}
 
-                  {user.phone && (
+                  {profile?.phone && (
                     <div className="flex items-center space-x-3">
                       <Phone className="w-5 h-5 text-gray-400" />
                       <div>
                         <p className="text-sm text-gray-600">Phone</p>
-                        <p className="font-medium">{user.phone}</p>
+                        <p className="font-medium">{profile.phone}</p>
                       </div>
                     </div>
                   )}
 
-                  {user.location && (
+                  {profile?.location && (
                     <div className="flex items-center space-x-3">
                       <MapPin className="w-5 h-5 text-gray-400" />
                       <div>
                         <p className="text-sm text-gray-600">Location</p>
-                        <p className="font-medium">{user.location}</p>
+                        <p className="font-medium">{profile.location}</p>
                       </div>
                     </div>
                   )}
