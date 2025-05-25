@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, MapPin } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,13 +11,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useToast } from '@/hooks/use-toast';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { supabase } from '@/integrations/supabase/client';
+import LocationSelector from '@/components/LocationSelector';
 
 const ListItem = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedLocationId, setSelectedLocationId] = useState('');
   const { user } = useAuth();
   const { canListMoreItems, currentPlan } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { uploadImages, uploading } = useImageUpload();
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   if (!user) {
     return (
@@ -78,12 +105,11 @@ const ListItem = () => {
     const condition = formData.get('condition') as string;
     const price = formData.get('price') as string;
     const period = formData.get('period') as string;
-    const location = formData.get('location') as string;
 
-    if (!title || !description || !category || !condition || !price || !period || !location) {
+    if (!title || !description || !category || !condition || !price || !period || !selectedLocationId) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields including location.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -91,9 +117,35 @@ const ListItem = () => {
     }
 
     try {
-      // Here you would typically save to Supabase
-      // For now, we'll simulate the process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Upload images first
+      let imageUrls: string[] = [];
+      if (selectedImages.length > 0) {
+        imageUrls = await uploadImages(selectedImages, 'items');
+      }
+
+      // Create the item
+      const { error } = await supabase
+        .from('items')
+        .insert({
+          user_id: user.id,
+          title,
+          description,
+          category_id: category,
+          condition,
+          price: parseInt(price) * 100, // Convert to cents
+          price_period: period,
+          min_rental_period: formData.get('minRental') as string || null,
+          location: selectedLocation,
+          location_id: selectedLocationId,
+          address: formData.get('address') as string || null,
+          images: imageUrls,
+          features: [],
+          included_items: [],
+          is_available: true,
+          ad_type: currentPlan.adType || 'normal'
+        });
+
+      if (error) throw error;
       
       toast({
         title: "Item listed successfully!",
@@ -101,6 +153,7 @@ const ListItem = () => {
       });
       navigate('/dashboard');
     } catch (error) {
+      console.error('Error creating item:', error);
       toast({
         title: "Error",
         description: "Failed to list item. Please try again.",
@@ -111,15 +164,27 @@ const ListItem = () => {
     }
   };
 
-  const categories = [
-    'Electronics', 'Vehicles', 'Tools & Equipment', 'Furniture', 
-    'Sports & Outdoor', 'Events & Party', 'Fashion', 'Books & Media'
-  ];
+  const handleLocationChange = (locationId: string, locationPath: string) => {
+    setSelectedLocationId(locationId);
+    setSelectedLocation(locationPath);
+  };
 
-  const locations = [
-    'Nairobi CBD', 'Westlands', 'Karen', 'Kilimani', 'Lavington',
-    'Kileleshwa', 'Parklands', 'Eastleigh', 'Kasarani', 'Embakasi'
-  ];
+  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length > 5) {
+      toast({
+        title: "Too many images",
+        description: "Please select maximum 5 images.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSelectedImages(files);
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -167,8 +232,8 @@ const ListItem = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.icon} {category.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -237,23 +302,11 @@ const ListItem = () => {
 
               {/* Location */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Location</h3>
-                
-                <div>
-                  <Label htmlFor="location">Area/Location *</Label>
-                  <Select name="location" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locations.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <h3 className="text-lg font-semibold">Location *</h3>
+                <LocationSelector
+                  onChange={handleLocationChange}
+                  required={true}
+                />
 
                 <div>
                   <Label htmlFor="address">Specific Address (Optional)</Label>
@@ -278,17 +331,38 @@ const ListItem = () => {
                     multiple
                     accept="image/*"
                     className="mt-4"
-                    name="images"
+                    onChange={handleImageSelection}
                   />
                 </div>
+
+                {selectedImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedImages.map((file, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <Button 
                 type="submit" 
                 className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={isLoading}
+                disabled={isLoading || uploading}
               >
-                {isLoading ? 'Publishing...' : 'Publish Listing'}
+                {isLoading || uploading ? 'Publishing...' : 'Publish Listing'}
               </Button>
             </form>
           </CardContent>

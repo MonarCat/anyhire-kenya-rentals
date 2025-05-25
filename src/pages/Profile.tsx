@@ -1,20 +1,22 @@
 
 import React, { useState } from 'react';
-import { Camera, MapPin, Phone, Mail, Calendar, User as UserIcon } from 'lucide-react';
+import { MapPin, Phone, Mail, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import ProfilePictureUpload from '@/components/ProfilePictureUpload';
+import LocationSelector from '@/components/LocationSelector';
 
 const Profile = () => {
   const { user, profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState('');
 
   if (!user) {
     return (
@@ -37,7 +39,7 @@ const Profile = () => {
     const profileData = {
       full_name: formData.get('full_name') as string,
       phone: formData.get('phone') as string,
-      location: formData.get('location') as string,
+      location: selectedLocation || (formData.get('location') as string),
       bio: formData.get('bio') as string,
       website: formData.get('website') as string,
     };
@@ -60,6 +62,10 @@ const Profile = () => {
     }
   };
 
+  const handleLocationChange = (locationId: string, locationPath: string) => {
+    setSelectedLocation(locationPath);
+  };
+
   const displayName = profile?.full_name || user.email?.split('@')[0] || 'User';
 
   return (
@@ -67,21 +73,10 @@ const Profile = () => {
       <div className="container mx-auto px-4 max-w-2xl">
         <Card>
           <CardHeader className="text-center">
-            <div className="relative inline-block">
-              <Avatar className="w-24 h-24 mx-auto">
-                <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                <AvatarFallback className="text-2xl bg-blue-100 text-blue-600">
-                  {displayName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <Button
-                size="sm"
-                className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0 bg-blue-600 hover:bg-blue-700"
-                onClick={() => toast({ title: "Feature coming soon", description: "Photo upload will be available soon." })}
-              >
-                <Camera className="w-4 h-4" />
-              </Button>
-            </div>
+            <ProfilePictureUpload 
+              currentImageUrl={profile?.avatar_url} 
+              userName={displayName}
+            />
             <CardTitle className="mt-4">Profile Settings</CardTitle>
             <CardDescription>
               Manage your AnyHire profile information
@@ -122,12 +117,10 @@ const Profile = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    name="location"
-                    defaultValue={profile?.location || ''}
-                    placeholder="Nairobi, Kenya"
+                  <Label>Location</Label>
+                  <LocationSelector
+                    onChange={handleLocationChange}
+                    required={false}
                   />
                 </div>
 
