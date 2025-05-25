@@ -10,6 +10,7 @@ interface Profile {
   location?: string;
   avatar_url?: string;
   bio?: string;
+  website?: string;
   rating?: number;
   review_count?: number;
   verified?: boolean;
