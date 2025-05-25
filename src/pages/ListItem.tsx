@@ -1,19 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useToast } from '@/hooks/use-toast';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { supabase } from '@/integrations/supabase/client';
-import LocationSelector from '@/components/LocationSelector';
+import BasicInformationForm from '@/components/forms/BasicInformationForm';
+import PricingForm from '@/components/forms/PricingForm';
+import LocationForm from '@/components/forms/LocationForm';
+import ImageUploadForm from '@/components/forms/ImageUploadForm';
 
 const ListItem = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -175,16 +173,7 @@ const ListItem = () => {
     setSelectedLocation(locationPath);
   };
 
-  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    if (files.length > 5) {
-      toast({
-        title: "Too many images",
-        description: "Please select maximum 5 images.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleImageSelection = (files: File[]) => {
     setSelectedImages(files);
   };
 
@@ -204,164 +193,14 @@ const ListItem = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
-                
-                <div>
-                  <Label htmlFor="title">Item Title *</Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    placeholder="e.g., Professional DSLR Camera"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    placeholder="Describe your item, its condition, and any special features..."
-                    rows={4}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="category">Category *</Label>
-                    <Select name="category" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.icon} {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="condition">Condition *</Label>
-                    <Select name="condition" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Item condition" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="excellent">Excellent</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="fair">Fair</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pricing */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Pricing & Availability</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="price">Rental Price (KES) *</Label>
-                    <Input
-                      id="price"
-                      name="price"
-                      type="number"
-                      placeholder="500"
-                      min="1"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="period">Rental Period *</Label>
-                    <Select name="period" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Per..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hour">Per Hour</SelectItem>
-                        <SelectItem value="day">Per Day</SelectItem>
-                        <SelectItem value="week">Per Week</SelectItem>
-                        <SelectItem value="month">Per Month</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="minRental">Minimum Rental Period</Label>
-                  <Input
-                    id="minRental"
-                    name="minRental"
-                    placeholder="e.g., 4 hours, 1 day"
-                  />
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Location</h3>
-                <LocationSelector
-                  onChange={handleLocationChange}
-                  required={false}
-                />
-
-                <div>
-                  <Label htmlFor="address">Specific Address (Optional)</Label>
-                  <Input
-                    id="address"
-                    name="address"
-                    placeholder="Street address or landmark"
-                  />
-                </div>
-              </div>
-
-              {/* Images */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Photos</h3>
-                
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">Upload photos of your item</p>
-                  <p className="text-sm text-gray-500">JPG, PNG up to 10MB each (max 5 photos)</p>
-                  <Input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    className="mt-4"
-                    onChange={handleImageSelection}
-                  />
-                </div>
-
-                {selectedImages.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedImages.map((file, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <BasicInformationForm categories={categories} />
+              <PricingForm />
+              <LocationForm onLocationChange={handleLocationChange} />
+              <ImageUploadForm
+                selectedImages={selectedImages}
+                onImageSelection={handleImageSelection}
+                onRemoveImage={removeImage}
+              />
 
               <Button 
                 type="submit" 
