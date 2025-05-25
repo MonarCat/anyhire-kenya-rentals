@@ -106,10 +106,10 @@ const ListItem = () => {
     const price = formData.get('price') as string;
     const period = formData.get('period') as string;
 
-    if (!title || !description || !category || !condition || !price || !period || !selectedLocationId) {
+    if (!title || !description || !category || !condition || !price || !period) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields including location.",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -123,27 +123,33 @@ const ListItem = () => {
         imageUrls = await uploadImages(selectedImages, 'items');
       }
 
-      // Create the item
+      // Create the item - use both location and location_id for compatibility
+      const itemData = {
+        user_id: user.id,
+        title,
+        description,
+        category_id: category,
+        condition,
+        price: parseInt(price) * 100, // Convert to cents
+        price_period: period,
+        min_rental_period: formData.get('minRental') as string || null,
+        location: selectedLocation || 'Kenya', // Fallback location
+        address: formData.get('address') as string || null,
+        images: imageUrls,
+        features: [],
+        included_items: [],
+        is_available: true,
+        ad_type: currentPlan.adType || 'normal'
+      };
+
+      // Add location_id if we have one
+      if (selectedLocationId) {
+        (itemData as any).location_id = selectedLocationId;
+      }
+
       const { error } = await supabase
         .from('items')
-        .insert({
-          user_id: user.id,
-          title,
-          description,
-          category_id: category,
-          condition,
-          price: parseInt(price) * 100, // Convert to cents
-          price_period: period,
-          min_rental_period: formData.get('minRental') as string || null,
-          location: selectedLocation,
-          location_id: selectedLocationId,
-          address: formData.get('address') as string || null,
-          images: imageUrls,
-          features: [],
-          included_items: [],
-          is_available: true,
-          ad_type: currentPlan.adType || 'normal'
-        });
+        .insert(itemData);
 
       if (error) throw error;
       
@@ -302,10 +308,10 @@ const ListItem = () => {
 
               {/* Location */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Location *</h3>
+                <h3 className="text-lg font-semibold">Location</h3>
                 <LocationSelector
                   onChange={handleLocationChange}
-                  required={true}
+                  required={false}
                 />
 
                 <div>
