@@ -15,64 +15,13 @@ const Dashboard = () => {
 
   const mockStats = {
     totalListings: userItemCount,
-    activeRentals: 3,
-    totalEarnings: 25680,
-    totalViews: 1543
+    activeRentals: 0,
+    totalEarnings: 0,
+    totalViews: 0
   };
 
-  const mockListings = [
-    {
-      id: '1',
-      title: 'Professional Camera - Canon EOS R5',
-      price: 500,
-      period: 'day',
-      status: 'active',
-      views: 245,
-      bookings: 12,
-      image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=100&h=100&fit=crop'
-    },
-    {
-      id: '2',
-      title: 'Power Tools Set - Complete Kit',
-      price: 200,
-      period: 'day',
-      status: 'rented',
-      views: 189,
-      bookings: 8,
-      image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=100&h=100&fit=crop'
-    },
-    {
-      id: '3',
-      title: 'DJ Equipment - Full Setup',
-      price: 150,
-      period: 'hour',
-      status: 'active',
-      views: 156,
-      bookings: 5,
-      image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop'
-    }
-  ];
-
-  const mockRentals = [
-    {
-      id: '1',
-      item: 'Gaming Laptop - High Performance',
-      renter: 'Mary Njeri',
-      startDate: '2024-01-15',
-      endDate: '2024-01-20',
-      amount: 1500,
-      status: 'active'
-    },
-    {
-      id: '2',
-      item: 'Wedding Decoration Package',
-      renter: 'David Kiprotich',
-      startDate: '2024-01-10',
-      endDate: '2024-01-12',
-      amount: 30000,
-      status: 'completed'
-    }
-  ];
+  const mockListings: any[] = [];
+  const mockRentals: any[] = [];
 
   if (!user) {
     return (
@@ -83,7 +32,7 @@ const Dashboard = () => {
             <CardDescription>Please sign in to access your dashboard</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild className="w-full bg-green-600 hover:bg-green-700">
+            <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
               <Link to="/auth">Sign In</Link>
             </Button>
           </CardContent>
@@ -104,7 +53,7 @@ const Dashboard = () => {
             <p className="text-gray-600 mt-1">Welcome back, {displayName}</p>
           </div>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <Button asChild className="bg-green-600 hover:bg-green-700">
+            <Button asChild className="bg-blue-600 hover:bg-blue-700">
               <Link to="/list-item">
                 <Plus className="w-4 h-4 mr-2" />
                 List New Item
@@ -131,7 +80,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-green-600 h-2 rounded-full" 
+                    className="bg-blue-600 h-2 rounded-full" 
                     style={{ 
                       width: currentPlan.itemLimit === Infinity 
                         ? '0%' 
@@ -157,7 +106,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{mockStats.totalListings}</div>
               <p className="text-xs text-muted-foreground">
-                +2 from last month
+                Active items listed
               </p>
             </CardContent>
           </Card>
@@ -170,7 +119,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{mockStats.activeRentals}</div>
               <p className="text-xs text-muted-foreground">
-                +1 from yesterday
+                Items currently rented
               </p>
             </CardContent>
           </Card>
@@ -183,7 +132,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">KES {mockStats.totalEarnings.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                +20.1% from last month
+                Start listing to earn
               </p>
             </CardContent>
           </Card>
@@ -196,7 +145,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{mockStats.totalViews.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                +180 this week
+                Item page views
               </p>
             </CardContent>
           </Card>
@@ -218,37 +167,51 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockListings.map((listing) => (
-                    <div key={listing.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                      <img 
-                        src={listing.image} 
-                        alt={listing.title}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{listing.title}</h3>
-                        <p className="text-sm text-gray-600">
-                          KES {listing.price}/{listing.period} • {listing.views} views • {listing.bookings} bookings
-                        </p>
+                {mockListings.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No items listed yet</h3>
+                    <p className="text-gray-600 mb-4">Start earning by listing your first item for rent</p>
+                    <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                      <Link to="/list-item">
+                        <Plus className="w-4 h-4 mr-2" />
+                        List Your First Item
+                      </Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {mockListings.map((listing) => (
+                      <div key={listing.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                        <img 
+                          src={listing.image} 
+                          alt={listing.title}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{listing.title}</h3>
+                          <p className="text-sm text-gray-600">
+                            KES {listing.price}/{listing.period} • {listing.views} views • {listing.bookings} bookings
+                          </p>
+                        </div>
+                        <Badge variant={listing.status === 'active' ? 'default' : 'secondary'}>
+                          {listing.status}
+                        </Badge>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="ghost">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-red-600">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <Badge variant={listing.status === 'active' ? 'default' : 'secondary'}>
-                        {listing.status}
-                      </Badge>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="ghost">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="text-red-600">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -262,24 +225,37 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockRentals.map((rental) => (
-                    <div key={rental.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-semibold">{rental.item}</h3>
-                        <p className="text-sm text-gray-600">
-                          Rented from {rental.renter} • {rental.startDate} to {rental.endDate}
-                        </p>
+                {mockRentals.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No rentals yet</h3>
+                    <p className="text-gray-600 mb-4">Browse items to find what you need</p>
+                    <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                      <Link to="/search">
+                        Browse Items
+                      </Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {mockRentals.map((rental) => (
+                      <div key={rental.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <h3 className="font-semibold">{rental.item}</h3>
+                          <p className="text-sm text-gray-600">
+                            Rented from {rental.renter} • {rental.startDate} to {rental.endDate}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">KES {rental.amount.toLocaleString()}</p>
+                          <Badge variant={rental.status === 'active' ? 'default' : 'secondary'}>
+                            {rental.status}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold">KES {rental.amount.toLocaleString()}</p>
-                        <Badge variant={rental.status === 'active' ? 'default' : 'secondary'}>
-                          {rental.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

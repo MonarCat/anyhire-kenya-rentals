@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Camera, MapPin, Phone, Mail, Calendar } from 'lucide-react';
+import { Camera, MapPin, Phone, Mail, Calendar, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +38,8 @@ const Profile = () => {
       full_name: formData.get('full_name') as string,
       phone: formData.get('phone') as string,
       location: formData.get('location') as string,
+      bio: formData.get('bio') as string,
+      website: formData.get('website') as string,
     };
 
     try {
@@ -68,13 +70,13 @@ const Profile = () => {
             <div className="relative inline-block">
               <Avatar className="w-24 h-24 mx-auto">
                 <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                <AvatarFallback className="text-2xl">
+                <AvatarFallback className="text-2xl bg-blue-100 text-blue-600">
                   {displayName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <Button
                 size="sm"
-                className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0"
+                className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0 bg-blue-600 hover:bg-blue-700"
                 onClick={() => toast({ title: "Feature coming soon", description: "Photo upload will be available soon." })}
               >
                 <Camera className="w-4 h-4" />
@@ -129,8 +131,29 @@ const Profile = () => {
                   />
                 </div>
 
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    name="website"
+                    defaultValue={profile?.website || ''}
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    name="bio"
+                    defaultValue={profile?.bio || ''}
+                    placeholder="Tell others about yourself..."
+                    rows={3}
+                  />
+                </div>
+
                 <div className="flex space-x-4">
-                  <Button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700">
+                  <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
                     {isLoading ? 'Saving...' : 'Save Changes'}
                   </Button>
                   <Button 
@@ -155,9 +178,7 @@ const Profile = () => {
 
                   {profile?.full_name && (
                     <div className="flex items-center space-x-3">
-                      <div className="w-5 h-5 text-gray-400 flex items-center justify-center">
-                        👤
-                      </div>
+                      <UserIcon className="w-5 h-5 text-gray-400" />
                       <div>
                         <p className="text-sm text-gray-600">Full Name</p>
                         <p className="font-medium">{profile.full_name}</p>
@@ -184,32 +205,35 @@ const Profile = () => {
                       </div>
                     </div>
                   )}
+
+                  {profile?.bio && (
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 text-gray-400 mt-1">📝</div>
+                      <div>
+                        <p className="text-sm text-gray-600">Bio</p>
+                        <p className="font-medium">{profile.bio}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {profile?.website && (
+                    <div className="flex items-center space-x-3">
+                      <div className="w-5 h-5 text-gray-400">🌐</div>
+                      <div>
+                        <p className="text-sm text-gray-600">Website</p>
+                        <a href={profile.website} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                          {profile.website}
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <Button onClick={() => setIsEditing(true)} className="bg-green-600 hover:bg-green-700">
+                <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700">
                   Edit Profile
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Account Stats */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Account Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">5</p>
-                <p className="text-sm text-gray-600">Items Listed</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">4.8</p>
-                <p className="text-sm text-gray-600">Rating</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

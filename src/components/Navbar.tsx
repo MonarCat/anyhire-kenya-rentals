@@ -35,7 +35,7 @@ const Navbar = () => {
   return (
     <header className="bg-white shadow-sm border-b">
       {/* Top bar */}
-      <div className="bg-green-600 text-white py-2">
+      <div className="bg-blue-600 text-white py-2">
         <div className="container mx-auto px-4 text-center text-sm">
           Welcome to AnyHire Kenya - Rent Anything, Anytime!
         </div>
@@ -46,10 +46,10 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">A</span>
             </div>
-            <span className="text-2xl font-bold text-green-600">AnyHire</span>
+            <span className="text-2xl font-bold text-blue-600">AnyHire</span>
           </Link>
 
           {/* Search bar - Desktop */}
@@ -60,9 +60,9 @@ const Navbar = () => {
                 placeholder="Search for items to rent..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-r-none border-r-0 focus:ring-green-500"
+                className="rounded-r-none border-r-0 focus:ring-blue-500"
               />
-              <Button type="submit" className="rounded-l-none bg-green-600 hover:bg-green-700">
+              <Button type="submit" className="rounded-l-none bg-blue-600 hover:bg-blue-700">
                 <Search className="w-4 h-4" />
               </Button>
             </div>
@@ -72,7 +72,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <Button asChild className="hidden md:flex bg-green-600 hover:bg-green-700">
+                <Button asChild className="hidden md:flex bg-blue-600 hover:bg-blue-700">
                   <Link to="/list-item">
                     <Plus className="w-4 h-4 mr-2" />
                     List Item
@@ -102,7 +102,7 @@ const Navbar = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <Button asChild className="bg-green-600 hover:bg-green-700">
+              <Button asChild className="bg-blue-600 hover:bg-blue-700">
                 <Link to="/auth">Sign In</Link>
               </Button>
             )}
@@ -129,7 +129,7 @@ const Navbar = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="rounded-r-none border-r-0"
             />
-            <Button type="submit" className="rounded-l-none bg-green-600 hover:bg-green-700">
+            <Button type="submit" className="rounded-l-none bg-blue-600 hover:bg-blue-700">
               <Search className="w-4 h-4" />
             </Button>
           </div>
@@ -139,7 +139,7 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t pt-4">
             {user && (
-              <Button asChild className="w-full mb-2 bg-green-600 hover:bg-green-700">
+              <Button asChild className="w-full mb-2 bg-blue-600 hover:bg-blue-700">
                 <Link to="/list-item">
                   <Plus className="w-4 h-4 mr-2" />
                   List Item
@@ -158,7 +158,7 @@ const Navbar = () => {
               <Link
                 key={category}
                 to={`/search?category=${encodeURIComponent(category)}`}
-                className="text-sm text-gray-600 hover:text-green-600 whitespace-nowrap"
+                className="text-sm text-gray-600 hover:text-blue-600 whitespace-nowrap"
               >
                 {category}
               </Link>

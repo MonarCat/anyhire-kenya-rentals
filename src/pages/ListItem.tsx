@@ -32,7 +32,7 @@ const ListItem = () => {
           <CardContent>
             <Button 
               onClick={() => navigate('/auth')}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-blue-600 hover:bg-blue-700"
             >
               Sign In
             </Button>
@@ -55,7 +55,7 @@ const ListItem = () => {
           <CardContent>
             <Button 
               onClick={() => navigate('/pricing')}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-blue-600 hover:bg-blue-700"
             >
               Upgrade Plan
             </Button>
@@ -69,15 +69,46 @@ const ListItem = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    
+    // Validate required fields
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const category = formData.get('category') as string;
+    const condition = formData.get('condition') as string;
+    const price = formData.get('price') as string;
+    const period = formData.get('period') as string;
+    const location = formData.get('location') as string;
+
+    if (!title || !description || !category || !condition || !price || !period || !location) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Here you would typically save to Supabase
+      // For now, we'll simulate the process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       toast({
         title: "Item listed successfully!",
         description: "Your item is now available for rent.",
       });
       navigate('/dashboard');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to list item. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const categories = [
@@ -173,6 +204,7 @@ const ListItem = () => {
                       name="price"
                       type="number"
                       placeholder="500"
+                      min="1"
                       required
                     />
                   </div>
@@ -246,13 +278,14 @@ const ListItem = () => {
                     multiple
                     accept="image/*"
                     className="mt-4"
+                    name="images"
                   />
                 </div>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
               >
                 {isLoading ? 'Publishing...' : 'Publish Listing'}
