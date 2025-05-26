@@ -1,110 +1,134 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search as SearchIcon, Filter, MapPin, Grid, List } from 'lucide-react';
+import { Search as SearchIcon, Grid, List, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
+import SearchFilters from '@/components/SearchFilters';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
-  
-  const mockItems = [
-    {
-      id: '1',
-      title: 'Professional Camera - Canon EOS R5',
-      price: 500,
-      period: 'day',
-      location: 'Westlands, Nairobi',
-      image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&h=300&fit=crop',
-      category: 'Electronics',
-      rating: 4.9,
-      isPromoted: true
-    },
-    {
-      id: '2',
-      title: 'Toyota Prado - 7 Seater',
-      price: 8000,
-      period: 'day',
-      location: 'Karen, Nairobi',
-      image: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=400&h=300&fit=crop',
-      category: 'Vehicles',
-      rating: 4.8,
-      isPromoted: true
-    },
-    {
-      id: '3',
-      title: 'Power Tools Set - Complete Kit',
-      price: 200,
-      period: 'day',
-      location: 'Industrial Area, Nairobi',
-      image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
-      category: 'Tools & Equipment',
-      rating: 4.7,
-      isPromoted: false
-    },
-    {
-      id: '4',
-      title: 'Wedding Decoration Package',
-      price: 15000,
-      period: 'day',
-      location: 'Lavington, Nairobi',
-      image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop',
-      category: 'Events & Party',
-      rating: 4.9,
-      isPromoted: false
-    },
-    {
-      id: '5',
-      title: 'Gaming Laptop - High Performance',
-      price: 300,
-      period: 'day',
-      location: 'Kilimani, Nairobi',
-      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop',
-      category: 'Electronics',
-      rating: 4.6,
-      isPromoted: false
-    },
-    {
-      id: '6',
-      title: 'Mountain Bike - Trek',
-      price: 150,
-      period: 'day',
-      location: 'Parklands, Nairobi',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop',
-      category: 'Sports & Outdoor',
-      rating: 4.5,
-      isPromoted: false
-    }
-  ];
+  const [showFilters, setShowFilters] = useState(false);
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const categories = [
-    'All Categories', 'Electronics', 'Vehicles', 'Tools & Equipment', 
-    'Furniture', 'Sports & Outdoor', 'Events & Party', 'Fashion', 'Books & Media'
-  ];
-
-  const filteredItems = mockItems.filter(item => {
-    const matchesSearch = !searchQuery || 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = !category || category === 'All Categories' || item.category === category;
-    
-    return matchesSearch && matchesCategory;
+  const [filters, setFilters] = useState({
+    location: searchParams.get('location') || 'All Locations',
+    minPrice: searchParams.get('minPrice') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
+    condition: searchParams.get('condition') || 'All Conditions',
+    category: searchParams.get('category') || 'All Categories'
   });
+
+  useEffect(() => {
+    fetchItems();
+  }, [filters, searchQuery]);
+
+  const fetchItems = async () => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from('items')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('is_available', true);
+
+      // Apply search query
+      if (searchQuery) {
+        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+      }
+
+      // Apply location filter
+      if (filters.location && filters.location !== 'All Locations') {
+        query = query.ilike('location', `%${filters.location}%`);
+      }
+
+      // Apply price filters
+      if (filters.minPrice) {
+        query = query.gte('price', parseInt(filters.minPrice) * 100); // Convert to cents
+      }
+      if (filters.maxPrice) {
+        query = query.lte('price', parseInt(filters.maxPrice) * 100); // Convert to cents
+      }
+
+      // Apply condition filter
+      if (filters.condition && filters.condition !== 'All Conditions') {
+        query = query.eq('condition', filters.condition);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching items:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load items. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setItems(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    updateSearchParams();
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      location: 'All Locations',
+      minPrice: '',
+      maxPrice: '',
+      condition: 'All Conditions',
+      category: 'All Categories'
+    });
+    setSearchQuery('');
+    setSearchParams({});
+  };
+
+  const updateSearchParams = () => {
     const params = new URLSearchParams();
     if (searchQuery) params.set('q', searchQuery);
-    if (category && category !== 'All Categories') params.set('category', category);
+    if (filters.location && filters.location !== 'All Locations') params.set('location', filters.location);
+    if (filters.minPrice) params.set('minPrice', filters.minPrice);
+    if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
+    if (filters.condition && filters.condition !== 'All Conditions') params.set('condition', filters.condition);
+    if (filters.category && filters.category !== 'All Categories') params.set('category', filters.category);
     setSearchParams(params);
+  };
+
+  const formatPrice = (priceInCents: number) => {
+    return (priceInCents / 100).toLocaleString();
   };
 
   return (
@@ -123,18 +147,6 @@ const Search = () => {
                   className="w-full"
                 />
               </div>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="md:w-48">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <Button type="submit" className="bg-green-600 hover:bg-green-700">
                 <SearchIcon className="w-4 h-4 mr-2" />
                 Search
@@ -145,13 +157,24 @@ const Search = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
+        {/* Filters */}
+        <SearchFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearFilters={handleClearFilters}
+          isOpen={showFilters}
+          onToggle={() => setShowFilters(!showFilters)}
+        />
+
         {/* Results Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">
-              {searchQuery || category ? 'Search Results' : 'All Items'}
+              {searchQuery || Object.values(filters).some(f => f && f !== 'All Locations' && f !== 'All Conditions' && f !== 'All Categories') ? 'Search Results' : 'All Items'}
             </h1>
-            <p className="text-gray-600">{filteredItems.length} items found</p>
+            <p className="text-gray-600">
+              {loading ? 'Loading...' : `${items.length} items found`}
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -173,58 +196,71 @@ const Search = () => {
         </div>
 
         {/* Results Grid */}
-        <div className={`grid gap-6 ${
-          viewMode === 'grid' 
-            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-            : 'grid-cols-1'
-        }`}>
-          {filteredItems.map((item) => (
-            <Link key={item.id} to={`/item/${item.id}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <img 
-                      src={item.image} 
-                      alt={item.title}
-                      className={`w-full object-cover rounded-t-lg group-hover:scale-105 transition-transform ${
-                        viewMode === 'grid' ? 'h-48' : 'h-32 md:h-40'
-                      }`}
-                    />
-                    {item.isPromoted && (
-                      <Badge className="absolute top-2 left-2 bg-yellow-500 text-black">
-                        Featured
-                      </Badge>
-                    )}
-                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-                      ⭐ {item.rating}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Loading items...</p>
+          </div>
+        ) : (
+          <div className={`grid gap-6 ${
+            viewMode === 'grid' 
+              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+              : 'grid-cols-1'
+          }`}>
+            {items.map((item) => (
+              <Link key={item.id} to={`/item/${item.id}`}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                  <CardContent className="p-0">
+                    <div className="relative">
+                      <img 
+                        src={item.images && item.images.length > 0 ? item.images[0] : 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=300&fit=crop'} 
+                        alt={item.title}
+                        className={`w-full object-cover rounded-t-lg group-hover:scale-105 transition-transform ${
+                          viewMode === 'grid' ? 'h-48' : 'h-32 md:h-40'
+                        }`}
+                      />
+                      {item.ad_type === 'featured' && (
+                        <Badge className="absolute top-2 left-2 bg-yellow-500 text-black">
+                          Featured
+                        </Badge>
+                      )}
+                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
+                        ⭐ {item.rating || 0}
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2 line-clamp-2">{item.title}</h3>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-2xl font-bold text-green-600">
-                        KES {item.price.toLocaleString()}
-                      </span>
-                      <span className="text-sm text-gray-600">/{item.period}</span>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">{item.title}</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl font-bold text-green-600">
+                          KES {formatPrice(item.price)}
+                        </span>
+                        <span className="text-sm text-gray-600">/{item.price_period}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600 mb-2">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        {item.location}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <Badge variant="secondary" className="text-xs capitalize">
+                          {item.condition}
+                        </Badge>
+                        {item.profiles?.full_name && (
+                          <span className="text-xs text-gray-500">
+                            by {item.profiles.full_name}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600 mb-2">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {item.location}
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      {item.category}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
 
-        {filteredItems.length === 0 && (
+        {!loading && items.length === 0 && (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold mb-2">No items found</h3>
-            <p className="text-gray-600">Try adjusting your search terms or browse all categories</p>
+            <p className="text-gray-600">Try adjusting your search terms or filters</p>
           </div>
         )}
       </div>
