@@ -30,6 +30,16 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
     setUploading(true);
     try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please upload an image file');
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File size must be less than 5MB');
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/avatar.${fileExt}`;
 
@@ -52,14 +62,14 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       await updateProfile({ avatar_url: publicUrl });
 
       toast({
-        title: "Profile picture updated!",
-        description: "Your profile picture has been successfully uploaded.",
+        title: "Success!",
+        description: "Profile picture updated successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload profile picture. Please try again.",
+        description: error.message || "Failed to upload profile picture",
         variant: "destructive",
       });
     } finally {
@@ -118,7 +128,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     }, 'image/jpeg', 0.8);
   };
 
-  const handleFileSelect = async () => {
+  const handleFileSelect = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -127,27 +137,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please select an image smaller than 5MB.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     await uploadImage(file);
   };
 
@@ -199,6 +188,12 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
                   </Button>
                 </div>
               </div>
+            )}
+            
+            {!showCamera && (
+              <Button onClick={startCamera} className="w-full">
+                Start Camera
+              </Button>
             )}
           </DialogContent>
         </Dialog>
