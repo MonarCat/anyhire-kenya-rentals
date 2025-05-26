@@ -1,172 +1,204 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Plus, User, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { Menu, X, User, LogOut, Settings, FileText } from 'lucide-react';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
+import Logo from './Logo';
 
 const Navbar = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
-  const categories = [
-    'Electronics', 'Vehicles', 'Tools & Equipment', 'Furniture', 
-    'Sports & Outdoor', 'Events & Party', 'Fashion', 'Books & Media'
-  ];
-
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
-
   return (
-    <header className="bg-white shadow-sm border-b">
-      {/* Top bar */}
-      <div className="bg-blue-600 text-white py-2">
-        <div className="container mx-auto px-4 text-center text-sm">
-          Welcome to AnyHire Kenya - Rent Anything, Anytime!
-        </div>
-      </div>
-
-      {/* Main navbar */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">A</span>
-            </div>
-            <span className="text-2xl font-bold text-blue-600">AnyHire</span>
+            <Logo size="sm" />
+            <span className="text-xl font-bold text-blue-600">AnyHire</span>
           </Link>
 
-          {/* Search bar - Desktop */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl mx-8">
-            <div className="relative flex w-full">
-              <Input
-                type="text"
-                placeholder="Search for items to rent..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-r-none border-r-0 focus:ring-blue-500"
-              />
-              <Button type="submit" className="rounded-l-none bg-blue-600 hover:bg-blue-700">
-                <Search className="w-4 h-4" />
-              </Button>
-            </div>
-          </form>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link to="/search" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Browse Items
+            </Link>
+            <Link to="/list-item" className="text-gray-700 hover:text-blue-600 transition-colors">
+              List Item
+            </Link>
+            <Link to="/pricing" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Pricing
+            </Link>
+            <Link to="/safety-tips" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Safety
+            </Link>
+            <Link to="/rental-agreement" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Agreement
+            </Link>
 
-          {/* Actions */}
-          <div className="flex items-center space-x-4">
             {user ? (
-              <>
-                <Button asChild className="hidden md:flex bg-blue-600 hover:bg-blue-700">
-                  <Link to="/list-item">
-                    <Plus className="w-4 h-4 mr-2" />
-                    List Item
-                  </Link>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                      <User className="w-4 h-4" />
-                      <span className="hidden md:block">{displayName}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard">Dashboard</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile">Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/pricing">Subscription</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={signOut}>
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <User className="w-4 h-4" />
+                    <span className="hidden lg:inline">Account</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <User className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Profile Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/rental-agreement')}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Rental Agreement
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                <Link to="/auth">Sign In</Link>
-              </Button>
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" onClick={() => navigate('/auth')}>
+                  Sign In
+                </Button>
+                <Button onClick={() => navigate('/auth')} className="bg-blue-600 hover:bg-blue-700">
+                  Get Started
+                </Button>
+              </div>
             )}
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
 
-        {/* Mobile search */}
-        <form onSubmit={handleSearch} className="md:hidden mt-4">
-          <div className="relative flex">
-            <Input
-              type="text"
-              placeholder="Search for items to rent..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-r-none border-r-0"
-            />
-            <Button type="submit" className="rounded-l-none bg-blue-600 hover:bg-blue-700">
-              <Search className="w-4 h-4" />
-            </Button>
-          </div>
-        </form>
-
-        {/* Mobile menu */}
+        {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t pt-4">
-            {user && (
-              <Button asChild className="w-full mb-2 bg-blue-600 hover:bg-blue-700">
-                <Link to="/list-item">
-                  <Plus className="w-4 h-4 mr-2" />
-                  List Item
-                </Link>
-              </Button>
-            )}
+          <div className="md:hidden py-4 border-t">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                to="/search" 
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Browse Items
+              </Link>
+              <Link 
+                to="/list-item" 
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                List Item
+              </Link>
+              <Link 
+                to="/pricing" 
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link 
+                to="/safety-tips" 
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Safety
+              </Link>
+              <Link 
+                to="/rental-agreement" 
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Agreement
+              </Link>
+
+              {user ? (
+                <>
+                  <Link 
+                    to="/dashboard" 
+                    className="text-gray-700 hover:text-blue-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    to="/profile" 
+                    className="text-gray-700 hover:text-blue-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMenuOpen(false);
+                    }}
+                    className="justify-start"
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <div className="flex flex-col space-y-2">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      navigate('/auth');
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      navigate('/auth');
+                      setIsMenuOpen(false);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Get Started
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Categories bar */}
-      <div className="bg-gray-50 border-t">
-        <div className="container mx-auto px-4 py-2">
-          <div className="flex space-x-6 overflow-x-auto scrollbar-hide">
-            {categories.map((category) => (
-              <Link
-                key={category}
-                to={`/search?category=${encodeURIComponent(category)}`}
-                className="text-sm text-gray-600 hover:text-blue-600 whitespace-nowrap"
-              >
-                {category}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    </header>
+    </nav>
   );
 };
 
