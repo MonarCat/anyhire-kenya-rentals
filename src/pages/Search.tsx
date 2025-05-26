@@ -18,6 +18,7 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [showFilters, setShowFilters] = useState(false);
   const [items, setItems] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -30,8 +31,27 @@ const Search = () => {
   });
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     fetchItems();
   }, [filters, searchQuery]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   const fetchItems = async () => {
     setLoading(true);
@@ -43,6 +63,9 @@ const Search = () => {
           profiles:user_id (
             full_name,
             avatar_url
+          ),
+          categories:category_id (
+            name
           )
         `)
         .eq('is_available', true);
@@ -55,6 +78,15 @@ const Search = () => {
       // Apply location filter
       if (filters.location && filters.location !== 'All Locations') {
         query = query.ilike('location', `%${filters.location}%`);
+      }
+
+      // Apply category filter
+      if (filters.category && filters.category !== 'All Categories') {
+        // Find the category ID by name
+        const categoryMatch = categories.find(cat => cat.name === filters.category);
+        if (categoryMatch) {
+          query = query.eq('category_id', categoryMatch.id);
+        }
       }
 
       // Apply price filters
@@ -120,10 +152,10 @@ const Search = () => {
     const params = new URLSearchParams();
     if (searchQuery) params.set('q', searchQuery);
     if (filters.location && filters.location !== 'All Locations') params.set('location', filters.location);
+    if (filters.category && filters.category !== 'All Categories') params.set('category', filters.category);
     if (filters.minPrice) params.set('minPrice', filters.minPrice);
     if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
     if (filters.condition && filters.condition !== 'All Conditions') params.set('condition', filters.condition);
-    if (filters.category && filters.category !== 'All Categories') params.set('category', filters.category);
     setSearchParams(params);
   };
 
@@ -218,7 +250,7 @@ const Search = () => {
                           viewMode === 'grid' ? 'h-48' : 'h-32 md:h-40'
                         }`}
                       />
-                      {item.ad_type === 'featured' && (
+                      {item.ad_type !== 'normal' && (
                         <Badge className="absolute top-2 left-2 bg-yellow-500 text-black">
                           Featured
                         </Badge>

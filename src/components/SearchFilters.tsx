@@ -28,7 +28,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   isOpen,
   onToggle
 }) => {
-  const activeFiltersCount = Object.values(filters).filter(value => value && value !== 'All Categories').length;
+  const activeFiltersCount = Object.values(filters).filter(value => value && value !== 'All Categories' && value !== 'All Locations' && value !== 'All Conditions').length;
 
   const locations = [
     'All Locations',
@@ -99,7 +99,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Location Filter */}
           <div>
             <label className="text-sm font-medium mb-2 block">Location</label>
@@ -111,6 +111,23 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 {locations.map((location) => (
                   <SelectItem key={location} value={location}>
                     {location}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Category</label>
+            <Select value={filters.category} onValueChange={(value) => onFilterChange('category', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -170,6 +187,15 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   />
                 </Badge>
               )}
+              {filters.category && filters.category !== 'All Categories' && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  {filters.category}
+                  <X 
+                    className="w-3 h-3 cursor-pointer" 
+                    onClick={() => onFilterChange('category', 'All Categories')}
+                  />
+                </Badge>
+              )}
               {filters.minPrice && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Min: KES {filters.minPrice}
@@ -194,15 +220,6 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   <X 
                     className="w-3 h-3 cursor-pointer" 
                     onClick={() => onFilterChange('condition', 'All Conditions')}
-                  />
-                </Badge>
-              )}
-              {filters.category && filters.category !== 'All Categories' && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {filters.category}
-                  <X 
-                    className="w-3 h-3 cursor-pointer" 
-                    onClick={() => onFilterChange('category', 'All Categories')}
                   />
                 </Badge>
               )}
