@@ -1,69 +1,47 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const CategoryGrid = () => {
-  const categories = [
-    {
-      name: 'Electronics',
-      icon: '📱',
-      count: '2,340 items',
-      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop'
-    },
-    {
-      name: 'Vehicles',
-      icon: '🚗',
-      count: '1,890 items',
-      image: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=400&h=300&fit=crop'
-    },
-    {
-      name: 'Tools & Equipment',
-      icon: '🔧',
-      count: '3,456 items',
-      image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop'
-    },
-    {
-      name: 'Furniture',
-      icon: '🪑',
-      count: '987 items',
-      image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'
-    },
-    {
-      name: 'Sports & Outdoor',
-      icon: '⚽',
-      count: '1,234 items',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop'
-    },
-    {
-      name: 'Events & Party',
-      icon: '🎉',
-      count: '765 items',
-      image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop'
-    },
-    {
-      name: 'Fashion',
-      icon: '👗',
-      count: '543 items',
-      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=300&fit=crop'
-    },
-    {
-      name: 'Books & Media',
-      icon: '📚',
-      count: '321 items',
-      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop'
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  if (loading) {
+    return <div>Loading categories...</div>;
+  }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-      {categories.map((category) => (
-        <Link key={category.name} to={`/search?category=${encodeURIComponent(category.name)}`}>
+      {categories.map((category: any) => (
+        <Link key={category.id} to={`/search?category=${encodeURIComponent(category.name)}`}>
           <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
             <CardContent className="p-0">
               <div className="relative">
                 <img 
-                  src={category.image} 
+                  src={category.image_url || 'https://images.pexels.com/photos/325153/pexels-photo-325153.jpeg'} 
                   alt={category.name}
                   className="w-full h-32 object-cover rounded-t-lg group-hover:scale-105 transition-transform"
                 />
@@ -74,7 +52,7 @@ const CategoryGrid = () => {
               </div>
               <div className="p-4">
                 <h3 className="font-semibold text-lg">{category.name}</h3>
-                <p className="text-sm text-gray-600">{category.count}</p>
+                <p className="text-sm text-gray-600">{category.description}</p>
               </div>
             </CardContent>
           </Card>

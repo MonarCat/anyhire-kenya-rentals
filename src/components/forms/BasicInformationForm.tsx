@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -6,7 +5,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface BasicInformationFormProps {
-  categories: any[];
+  categories: {
+    id: string;
+    name: string;
+    icon?: string;
+  }[];
 }
 
 const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories }) => {
@@ -39,7 +42,7 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories 
         <div>
           <Label htmlFor="category">Category *</Label>
           <Select name="category" required>
-            <SelectTrigger>
+            <SelectTrigger id="category">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -55,7 +58,7 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories 
         <div>
           <Label htmlFor="condition">Condition *</Label>
           <Select name="condition" required>
-            <SelectTrigger>
+            <SelectTrigger id="condition">
               <SelectValue placeholder="Item condition" />
             </SelectTrigger>
             <SelectContent>

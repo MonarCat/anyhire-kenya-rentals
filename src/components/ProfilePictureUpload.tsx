@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,10 @@ interface ProfilePictureUploadProps {
   userName: string;
 }
 
-const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImageUrl, userName }) => {
+const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
+  currentImageUrl,
+  userName
+}) => {
   const [uploading, setUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -21,6 +23,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
   const { user, updateProfile } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadImage = async (file: File) => {
     if (!user) return;
@@ -30,16 +33,22 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/avatar.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('profiles')
-        .upload(fileName, file, { upsert: true });
+      // Upload to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { 
+          upsert: true,
+          contentType: file.type 
+        });
 
       if (uploadError) throw uploadError;
 
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('profiles')
+        .from('avatars')
         .getPublicUrl(fileName);
 
+      // Update profile with new avatar URL
       await updateProfile({ avatar_url: publicUrl });
 
       toast({
@@ -61,7 +70,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' }, // Front camera for selfies
+        video: { facingMode: 'user' },
         audio: false
       });
       setStream(mediaStream);
@@ -73,7 +82,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
       console.error('Error accessing camera:', error);
       toast({
         title: "Camera access denied",
-        description: "Please allow camera access to take a selfie for verification.",
+        description: "Please allow camera access to take a selfie.",
         variant: "destructive",
       });
     }
@@ -100,16 +109,22 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
 
-    canvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (blob) {
         const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
-        uploadImage(file);
+        await uploadImage(file);
         stopCamera();
       }
     }, 'image/jpeg', 0.8);
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -133,7 +148,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
       return;
     }
 
-    uploadImage(file);
+    await uploadImage(file);
   };
 
   return (
@@ -153,7 +168,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
               size="sm"
               className="rounded-full w-8 h-8 p-0 bg-blue-600 hover:bg-blue-700"
               disabled={uploading}
-              onClick={startCamera}
             >
               <Camera className="w-4 h-4" />
             </Button>
@@ -162,7 +176,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
             <DialogHeader>
               <DialogTitle>Take a Selfie</DialogTitle>
               <DialogDescription>
-                For security purposes, please take a clear selfie showing your face for profile verification.
+                Take a clear selfie for your profile picture
               </DialogDescription>
             </DialogHeader>
             
@@ -192,29 +206,24 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
         {/* Upload Button */}
         <div>
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
-            onChange={handleFileSelect}
+            onChange={handleFileChange}
             className="hidden"
-            id="profile-picture-upload"
-            disabled={uploading}
           />
-          <label htmlFor="profile-picture-upload">
-            <Button
-              size="sm"
-              className="rounded-full w-8 h-8 p-0 bg-green-600 hover:bg-green-700"
-              disabled={uploading}
-              asChild
-            >
-              <span className="cursor-pointer">
-                {uploading ? (
-                  <Upload className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
-              </span>
-            </Button>
-          </label>
+          <Button
+            size="sm"
+            className="rounded-full w-8 h-8 p-0 bg-green-600 hover:bg-green-700"
+            disabled={uploading}
+            onClick={handleFileSelect}
+          >
+            {uploading ? (
+              <Upload className="w-4 h-4 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4" />
+            )}
+          </Button>
         </div>
       </div>
 
@@ -222,7 +231,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ currentImag
         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
           <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
             <User className="w-3 h-3 mr-1" />
-            <span>Verification Required</span>
+            <span>Add Photo</span>
           </div>
         </div>
       )}
