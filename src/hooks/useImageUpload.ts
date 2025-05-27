@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -16,14 +15,12 @@ export const useImageUpload = () => {
     const uploadedUrls: string[] = [];
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
+      for (const file of files) {
         // Validate file type
         if (!file.type.startsWith('image/')) {
           toast({
             title: "Invalid file type",
-            description: `File ${file.name} is not an image.`,
+            description: `${file.name} is not an image file.`,
             variant: "destructive",
           });
           continue;
@@ -33,18 +30,21 @@ export const useImageUpload = () => {
         if (file.size > 10 * 1024 * 1024) {
           toast({
             title: "File too large",
-            description: `File ${file.name} is larger than 10MB.`,
+            description: `${file.name} is larger than 10MB.`,
             variant: "destructive",
           });
           continue;
         }
 
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}_${i}.${fileExt}`;
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError, data } = await supabase.storage
           .from(folder)
-          .upload(fileName, file);
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
@@ -65,22 +65,23 @@ export const useImageUpload = () => {
 
       if (uploadedUrls.length > 0) {
         toast({
-          title: "Images uploaded!",
-          description: `Successfully uploaded ${uploadedUrls.length} image(s).`,
+          title: "Upload successful",
+          description: `Successfully uploaded ${uploadedUrls.length} image(s)`,
         });
       }
+
+      return uploadedUrls;
     } catch (error) {
       console.error('Error uploading images:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload images. Please try again.",
+        description: "An error occurred while uploading images",
         variant: "destructive",
       });
+      return [];
     } finally {
       setUploading(false);
     }
-
-    return uploadedUrls;
   };
 
   return { uploadImages, uploading };

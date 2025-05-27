@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Upload, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -16,9 +15,12 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
   onRemoveImage
 }) => {
   const { toast } = useToast();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
+    
+    // Validate number of files
     if (files.length > 5) {
       toast({
         title: "Too many images",
@@ -27,7 +29,37 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
       });
       return;
     }
-    onImageSelection(files);
+
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: `${file.name} is not an image file.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: `${file.name} exceeds 10MB limit.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      return true;
+    });
+
+    if (validFiles.length > 0) {
+      onImageSelection(validFiles);
+      // Reset input value to allow selecting the same file again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   return (
@@ -39,6 +71,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
         <p className="text-gray-600 mb-2">Upload photos of your item</p>
         <p className="text-sm text-gray-500">JPG, PNG up to 10MB each (max 5 photos)</p>
         <Input
+          ref={fileInputRef}
           type="file"
           multiple
           accept="image/*"
