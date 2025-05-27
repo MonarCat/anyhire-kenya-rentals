@@ -15,21 +15,20 @@ interface BasicInformationFormProps {
 }
 
 const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories: propCategories }) => {
-  const [categories, setCategories] = useState(propCategories);
+  const [categories, setCategories] = useState(propCategories || []);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // If no categories passed as props or empty, fetch them directly
-    if (!propCategories || propCategories.length === 0) {
-      fetchCategories();
-    } else {
-      setCategories(propCategories);
-    }
-  }, [propCategories]);
+    // Always fetch categories to ensure we have the latest data
+    fetchCategories();
+  }, []);
 
   const fetchCategories = async () => {
     setLoading(true);
+    setError(null);
     try {
+      console.log('Fetching categories from database...');
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, icon')
@@ -39,13 +38,20 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
 
       if (error) {
         console.error('Error fetching categories:', error);
+        setError('Failed to load categories');
         return;
       }
 
       console.log('Fetched categories:', data);
-      setCategories(data || []);
+      if (data && data.length > 0) {
+        setCategories(data);
+      } else {
+        console.log('No categories found in database');
+        setError('No categories available');
+      }
     } catch (error) {
       console.error('Error fetching categories:', error);
+      setError('Failed to load categories');
     } finally {
       setLoading(false);
     }
@@ -81,12 +87,21 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
           <Label htmlFor="category">Category *</Label>
           <Select name="category" required>
             <SelectTrigger id="category">
-              <SelectValue placeholder={loading ? "Loading categories..." : "Select category"} />
+              <SelectValue placeholder={
+                loading ? "Loading categories..." : 
+                error ? "Error loading categories" :
+                categories.length === 0 ? "No categories available" :
+                "Select category"
+              } />
             </SelectTrigger>
             <SelectContent className="bg-white border border-gray-200 shadow-lg z-50 max-h-[300px] overflow-y-auto">
               {loading ? (
                 <SelectItem value="loading" disabled>
                   Loading categories...
+                </SelectItem>
+              ) : error ? (
+                <SelectItem value="error" disabled>
+                  {error}
                 </SelectItem>
               ) : categories.length === 0 ? (
                 <SelectItem value="no-categories" disabled>
@@ -104,9 +119,14 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
               )}
             </SelectContent>
           </Select>
-          {categories.length > 0 && (
+          {!loading && !error && categories.length > 0 && (
             <p className="text-xs text-gray-500 mt-1">
               {categories.length} categories available
+            </p>
+          )}
+          {error && (
+            <p className="text-xs text-red-500 mt-1">
+              {error}
             </p>
           )}
         </div>
