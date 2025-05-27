@@ -103,7 +103,7 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
             </SelectTrigger>
             <SelectContent className="max-h-[300px] overflow-y-auto">
               {loading ? (
-                <SelectItem value="loading" disabled>
+                <SelectItem value="loading\" disabled>
                   Loading categories...
                 </SelectItem>
               ) : error ? (
