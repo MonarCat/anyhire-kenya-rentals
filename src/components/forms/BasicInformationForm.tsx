@@ -15,12 +15,11 @@ interface BasicInformationFormProps {
 }
 
 const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories: propCategories }) => {
-  const [categories, setCategories] = useState(propCategories || []);
-  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Always fetch categories to ensure we have the latest data
     fetchCategories();
   }, []);
 
@@ -47,11 +46,21 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
         setCategories(data);
       } else {
         console.log('No categories found in database');
-        setError('No categories available');
+        // If no categories in database, use the prop categories as fallback
+        if (propCategories && propCategories.length > 0) {
+          setCategories(propCategories);
+        } else {
+          setError('No categories available');
+        }
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
       setError('Failed to load categories');
+      // Use prop categories as fallback on error
+      if (propCategories && propCategories.length > 0) {
+        setCategories(propCategories);
+        setError(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -109,10 +118,10 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
                 </SelectItem>
               ) : (
                 categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id} className="cursor-pointer hover:bg-gray-100">
-                    <div className="flex items-center gap-2">
-                      {category.icon && <span>{category.icon}</span>}
-                      <span>{category.name}</span>
+                  <SelectItem key={category.id} value={category.id} className="cursor-pointer hover:bg-gray-100 flex items-center">
+                    <div className="flex items-center gap-2 w-full">
+                      {category.icon && <span className="text-lg">{category.icon}</span>}
+                      <span className="flex-1">{category.name}</span>
                     </div>
                   </SelectItem>
                 ))

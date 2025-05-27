@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,14 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   }, [stream]);
 
   const uploadImage = async (file: File) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to upload a profile picture",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setUploading(true);
     try {
@@ -49,23 +57,30 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         throw new Error('File size must be less than 5MB');
       }
 
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop() || 'jpg';
       const fileName = `${user.id}/avatar.${fileExt}`;
 
+      console.log('Uploading image to:', fileName);
+
       // Upload to Supabase Storage
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { 
           upsert: true,
           contentType: file.type 
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
+
+      console.log('Image uploaded successfully:', publicUrl);
 
       // Update profile with new avatar URL
       await updateProfile({ avatar_url: publicUrl });
@@ -160,6 +175,10 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
     await uploadImage(file);
+    // Clear the input value so the same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -204,7 +223,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
                   <div className="flex justify-center space-x-4">
                     <Button onClick={capturePhoto} disabled={uploading}>
                       <Camera className="w-4 h-4 mr-2" />
-                      Capture Photo
+                      {uploading ? 'Uploading...' : 'Capture Photo'}
                     </Button>
                     <Button variant="outline" onClick={stopCamera}>
                       Cancel
@@ -238,7 +257,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
             onClick={handleFileSelect}
           >
             {uploading ? (
-              <Upload className="w-4 h-4 animate-spin" />
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <Upload className="w-4 h-4" />
             )}
