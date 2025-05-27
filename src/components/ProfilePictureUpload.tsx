@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,6 +24,15 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Cleanup function for camera stream
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
 
   const uploadImage = async (file: File) => {
     if (!user) return;
@@ -79,10 +88,19 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
   const startCamera = async () => {
     try {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
         audio: false
       });
+      
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
@@ -109,16 +127,20 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
-    const canvas = canvasRef.current;
     const video = videoRef.current;
+    const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
     if (!context) return;
 
+    // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
 
+    // Draw the video frame to the canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert canvas to blob
     canvas.toBlob(async (blob) => {
       if (blob) {
         const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
@@ -169,32 +191,34 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
               </DialogDescription>
             </DialogHeader>
             
-            {showCamera && (
-              <div className="space-y-4">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full rounded-lg"
-                />
-                <canvas ref={canvasRef} className="hidden" />
-                <div className="flex justify-center space-x-4">
-                  <Button onClick={capturePhoto} disabled={uploading}>
-                    <Camera className="w-4 h-4 mr-2" />
-                    Capture Photo
-                  </Button>
-                  <Button variant="outline" onClick={stopCamera}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {!showCamera && (
-              <Button onClick={startCamera} className="w-full">
-                Start Camera
-              </Button>
-            )}
+            <div className="space-y-4">
+              {showCamera && (
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full rounded-lg"
+                  />
+                  <canvas ref={canvasRef} className="hidden" />
+                  <div className="flex justify-center space-x-4">
+                    <Button onClick={capturePhoto} disabled={uploading}>
+                      <Camera className="w-4 h-4 mr-2" />
+                      Capture Photo
+                    </Button>
+                    <Button variant="outline" onClick={stopCamera}>
+                      Cancel
+                    </Button>
+                  </div>
+                </>
+              )}
+              
+              {!showCamera && (
+                <Button onClick={startCamera} className="w-full">
+                  Start Camera
+                </Button>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
 
