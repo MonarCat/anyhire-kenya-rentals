@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -25,8 +26,10 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
   }, []);
 
   const fetchCategories = async () => {
+    console.log('Fetching categories from database...');
     setLoading(true);
     setError(null);
+    
     try {
       const { data, error } = await supabase
         .from('categories')
@@ -35,17 +38,29 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
         .order('sort_order', { ascending: true })
         .order('name', { ascending: true });
 
+      console.log('Categories query result:', { data, error });
+
       if (error) {
-        console.error('Error fetching categories:', error);
-        setError('Failed to load categories');
+        console.error('Supabase error:', error);
+        setError(`Database error: ${error.message}`);
+        
+        // Use prop categories as fallback
+        if (propCategories && propCategories.length > 0) {
+          console.log('Using prop categories as fallback');
+          setCategories(propCategories);
+          setError(null);
+        }
         return;
       }
 
       if (data && data.length > 0) {
+        console.log('Successfully loaded categories:', data);
         setCategories(data);
       } else {
+        console.log('No categories found in database, checking prop categories');
         // If no categories in database, use the prop categories as fallback
         if (propCategories && propCategories.length > 0) {
+          console.log('Using prop categories:', propCategories);
           setCategories(propCategories);
         } else {
           setError('No categories available');
@@ -53,9 +68,11 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      setError('Failed to load categories');
+      setError(`Failed to load categories: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
       // Use prop categories as fallback on error
       if (propCategories && propCategories.length > 0) {
+        console.log('Using prop categories as fallback after error');
         setCategories(propCategories);
         setError(null);
       }
@@ -103,7 +120,7 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
             </SelectTrigger>
             <SelectContent className="max-h-[300px] overflow-y-auto">
               {loading ? (
-                <SelectItem value="loading\" disabled>
+                <SelectItem value="loading" disabled>
                   Loading categories...
                 </SelectItem>
               ) : error ? (
@@ -126,6 +143,15 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
               )}
             </SelectContent>
           </Select>
+          {error && (
+            <button 
+              type="button"
+              onClick={fetchCategories}
+              className="text-sm text-blue-600 hover:text-blue-800 mt-1"
+            >
+              Retry loading categories
+            </button>
+          )}
         </div>
 
         <div>
