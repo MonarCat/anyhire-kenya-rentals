@@ -1,4 +1,4 @@
-
+// Updated ListItem.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ const ListItem = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedLocationId, setSelectedLocationId] = useState('');
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const { user } = useAuth();
   const { canListMoreItems, currentPlan } = useSubscription();
   const navigate = useNavigate();
@@ -95,17 +96,7 @@ const ListItem = () => {
     setIsLoading(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      
-      // Validate required fields
-      const title = formData.get('title') as string;
-      const description = formData.get('description') as string;
-      const category = formData.get('category') as string;
-      const condition = formData.get('condition') as string;
-      const price = formData.get('price') as string;
-      const period = formData.get('period') as string;
-
-      console.log('Form data:', { title, description, category, condition, price, period });
+      const { title, description, category, condition, price, period, minRental, address } = formData;
 
       if (!title || !description || !category || !condition || !price || !period) {
         toast({
@@ -117,26 +108,22 @@ const ListItem = () => {
         return;
       }
 
-      // Upload images first if any
       let imageUrls: string[] = [];
       if (selectedImages.length > 0) {
-        console.log('Uploading images...');
         imageUrls = await uploadImages(selectedImages, 'items');
-        console.log('Images uploaded:', imageUrls);
       }
 
-      // Create the item
-      const itemData = {
+      const itemData: any = {
         user_id: user.id,
         title,
         description,
         category_id: category,
         condition,
-        price: parseInt(price) * 100, // Convert to cents
+        price: parseInt(price) * 100,
         price_period: period,
-        min_rental_period: formData.get('minRental') as string || null,
+        min_rental_period: minRental || null,
         location: selectedLocation || 'Kenya',
-        address: formData.get('address') as string || null,
+        address: address || null,
         images: imageUrls,
         features: [],
         included_items: [],
@@ -144,12 +131,9 @@ const ListItem = () => {
         ad_type: currentPlan.adType || 'normal'
       };
 
-      // Add location_id if we have one
       if (selectedLocationId) {
-        (itemData as any).location_id = selectedLocationId;
+        itemData.location_id = selectedLocationId;
       }
-
-      console.log('Creating item with data:', itemData);
 
       const { data: newItem, error } = await supabase
         .from('items')
@@ -157,22 +141,14 @@ const ListItem = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Item created successfully:', newItem);
-      
       toast({
         title: "Success!",
         description: "Your item has been listed successfully.",
       });
 
-      // Navigate to dashboard with a short delay to ensure the toast shows
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+      setTimeout(() => navigate('/dashboard'), 1000);
 
     } catch (error) {
       console.error('Error creating item:', error);
@@ -184,19 +160,6 @@ const ListItem = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleLocationChange = (locationId: string, locationPath: string) => {
-    setSelectedLocationId(locationId);
-    setSelectedLocation(locationPath);
-  };
-
-  const handleImageSelection = (files: File[]) => {
-    setSelectedImages(files);
-  };
-
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -211,20 +174,18 @@ const ListItem = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <BasicInformationForm categories={categories} />
-              <PricingForm />
-              <LocationForm onLocationChange={handleLocationChange} />
+              <BasicInformationForm categories={categories} formData={formData} setFormData={setFormData} />
+              <PricingForm formData={formData} setFormData={setFormData} />
+              <LocationForm onLocationChange={(id, loc) => {
+                setSelectedLocationId(id);
+                setSelectedLocation(loc);
+              }} />
               <ImageUploadForm
                 selectedImages={selectedImages}
-                onImageSelection={handleImageSelection}
-                onRemoveImage={removeImage}
+                onImageSelection={setSelectedImages}
+                onRemoveImage={(index) => setSelectedImages(prev => prev.filter((_, i) => i !== index))}
               />
-
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={isLoading || uploading}
-              >
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading || uploading}>
                 {isLoading || uploading ? 'Publishing...' : 'Publish Listing'}
               </Button>
             </form>
