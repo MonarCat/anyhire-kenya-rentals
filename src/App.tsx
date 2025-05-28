@@ -19,6 +19,7 @@ import SafetyTips from "./pages/SafetyTips";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
+import RentalAgreement from "./pages/RentalAgreement";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
@@ -44,6 +45,7 @@ const App = () => (
                   <Route path="/search" element={<Search />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/rental-agreement" element={<RentalAgreement />} />
                   <Route path="/safety" element={<SafetyTips />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
