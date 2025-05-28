@@ -94,34 +94,38 @@ const ListItem = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    
-    // Validate required fields
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const category = formData.get('category') as string;
-    const condition = formData.get('condition') as string;
-    const price = formData.get('price') as string;
-    const period = formData.get('period') as string;
-
-    if (!title || !description || !category || !condition || !price || !period) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // Upload images first
-      let imageUrls: string[] = [];
-      if (selectedImages.length > 0) {
-        imageUrls = await uploadImages(selectedImages, 'items');
+      const formData = new FormData(e.currentTarget);
+      
+      // Validate required fields
+      const title = formData.get('title') as string;
+      const description = formData.get('description') as string;
+      const category = formData.get('category') as string;
+      const condition = formData.get('condition') as string;
+      const price = formData.get('price') as string;
+      const period = formData.get('period') as string;
+
+      console.log('Form data:', { title, description, category, condition, price, period });
+
+      if (!title || !description || !category || !condition || !price || !period) {
+        toast({
+          title: "Missing Information",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
       }
 
-      // Create the item - use both location and location_id for compatibility
+      // Upload images first if any
+      let imageUrls: string[] = [];
+      if (selectedImages.length > 0) {
+        console.log('Uploading images...');
+        imageUrls = await uploadImages(selectedImages, 'items');
+        console.log('Images uploaded:', imageUrls);
+      }
+
+      // Create the item
       const itemData = {
         user_id: user.id,
         title,
@@ -131,7 +135,7 @@ const ListItem = () => {
         price: parseInt(price) * 100, // Convert to cents
         price_period: period,
         min_rental_period: formData.get('minRental') as string || null,
-        location: selectedLocation || 'Kenya', // Fallback location
+        location: selectedLocation || 'Kenya',
         address: formData.get('address') as string || null,
         images: imageUrls,
         features: [],
@@ -145,17 +149,31 @@ const ListItem = () => {
         (itemData as any).location_id = selectedLocationId;
       }
 
-      const { error } = await supabase
-        .from('items')
-        .insert(itemData);
+      console.log('Creating item with data:', itemData);
 
-      if (error) throw error;
+      const { data: newItem, error } = await supabase
+        .from('items')
+        .insert(itemData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Item created successfully:', newItem);
       
       toast({
-        title: "Item listed successfully!",
-        description: "Your item is now available for rent.",
+        title: "Success!",
+        description: "Your item has been listed successfully.",
       });
-      navigate('/dashboard');
+
+      // Navigate to dashboard with a short delay to ensure the toast shows
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+
     } catch (error) {
       console.error('Error creating item:', error);
       toast({
