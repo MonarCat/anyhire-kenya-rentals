@@ -655,8 +655,545 @@ const hardcodedWards: { [key: string]: Location[] } = {
     { id: '450102', name: 'Bobasi Boitangare', type: 'ward', parent_id: '4501' },
     { id: '450103', name: 'Bobasi Chache', type: 'ward', parent_id: '4501' },
     { id: '450104', name: 'Bobasi Nyaribari', type: 'ward', parent_id: '4501' }
-  ]
+  ],
   
+  // Lurambi Sub-County Wards
+  '37002': [
+    { id: '37002001', name: 'Lurambi East', type: 'ward', parent_id: '37002' },
+    { id: '37002002', name: 'Lurambi West', type: 'ward', parent_id: '37002' },
+    { id: '37002003', name: 'Shirere', type: 'ward', parent_id: '37002' },
+    { id: '37002004', name: 'Ingotse', type: 'ward', parent_id: '37002' }
+  ],
+
+  // Navakholo Sub-County Wards
+  '37003': [
+    { id: '37003001', name: 'Navakholo Central', type: 'ward', parent_id: '37003' },
+    { id: '37003002', name: 'Navakholo North', type: 'ward', parent_id: '37003' },
+    { id: '37003003', name: 'Navakholo South', type: 'ward', parent_id: '37003' }
+  ],
+
+  // Mumias West Sub-County Wards
+  '37004': [
+    { id: '37004001', name: 'Mumias Central', type: 'ward', parent_id: '37004' },
+    { id: '37004002', name: 'Mumias North', type: 'ward', parent_id: '37004' },
+    { id: '37004003', name: 'Etenje', type: 'ward', parent_id: '37004' }
+  ],
+
+  // Mumias East Sub-County Wards
+  '37005': [
+    { id: '37005001', name: 'Musanda', type: 'ward', parent_id: '37005' },
+    { id: '37005002', name: 'Lubinu', type: 'ward', parent_id: '37005' },
+    { id: '37005003', name: 'Mumias East', type: 'ward', parent_id: '37005' }
+  ],
+
+  // Matungu Sub-County Wards
+  '37006': [
+    { id: '37006001', name: 'Matungu Central', type: 'ward', parent_id: '37006' },
+    { id: '37006002', name: 'Koyonzo', type: 'ward', parent_id: '37006' },
+    { id: '37006003', name: 'Kholera', type: 'ward', parent_id: '37006' }
+  ],
+
+  // Butere Sub-County Wards
+  '37007': [
+    { id: '37007001', name: 'Butere Township', type: 'ward', parent_id: '37007' },
+    { id: '37007002', name: 'Marama Central', type: 'ward', parent_id: '37007' },
+    { id: '37007003', name: 'Marama North', type: 'ward', parent_id: '37007' }
+  ],
+
+  // Khwisero Sub-County Wards
+  '37008': [
+    { id: '37008001', name: 'Khwisero Central', type: 'ward', parent_id: '37008' },
+    { id: '37008002', name: 'Khwisero East', type: 'ward', parent_id: '37008' },
+    { id: '37008003', name: 'Khwisero West', type: 'ward', parent_id: '37008' }
+  ],
+
+  // Shinyalu Sub-County Wards
+  '37009': [
+    { id: '37009001', name: 'Shinyalu Central', type: 'ward', parent_id: '37009' },
+    { id: '37009002', name: 'Shinyalu South', type: 'ward', parent_id: '37009' },
+    { id: '37009003', name: 'Shinyalu North', type: 'ward', parent_id: '37009' }
+  ],
+
+  // Ikolomani Sub-County Wards
+  '37010': [
+    { id: '37010001', name: 'Ikolomani Central', type: 'ward', parent_id: '37010' },
+    { id: '37010002', name: 'Idakho East', type: 'ward', parent_id: '37010' },
+    { id: '37010003', name: 'Idakho West', type: 'ward', parent_id: '37010' }
+  ],
+
+  // Lugari Sub-County Wards
+  '37011': [
+    { id: '37011001', name: 'Lugari Central', type: 'ward', parent_id: '37011' },
+    { id: '37011002', name: 'Lugari East', type: 'ward', parent_id: '37011' },
+    { id: '37011003', name: 'Lugari West', type: 'ward', parent_id: '37011' }
+  ],
+
+  // Likuyani Sub-County Wards
+  '37012': [
+    { id: '37012001', name: 'Likuyani Central', type: 'ward', parent_id: '37012' },
+    { id: '37012002', name: 'Likuyani North', type: 'ward', parent_id: '37012' },
+    { id: '37012003', name: 'Likuyani South', type: 'ward', parent_id: '37012' }
+  ],
+
+  // Dagoretti North Sub-County Wards
+  '47002': [
+    { id: '47002001', name: 'Kilimani', type: 'ward', parent_id: '47002' },
+    { id: '47002002', name: 'Kawangware', type: 'ward', parent_id: '47002' },
+    { id: '47002003', name: 'Gatina', type: 'ward', parent_id: '47002' }
+  ],
+
+  // Dagoretti South Sub-County Wards
+  '47003': [
+    { id: '47003001', name: 'Mutu-ini', type: 'ward', parent_id: '47003' },
+    { id: '47003002', name: 'Ngando', type: 'ward', parent_id: '47003' },
+    { id: '47003003', name: 'Riruta', type: 'ward', parent_id: '47003' }
+  ],
+
+  // Langata Sub-County Wards
+  '47004': [
+    { id: '47004001', name: 'Karen', type: 'ward', parent_id: '47004' },
+    { id: '47004002', name: 'Nairobi West', type: 'ward', parent_id: '47004' },
+    { id: '47004003', name: 'Mugumo-ini', type: 'ward', parent_id: '47004' }
+  ],
+
+  // Kibra Sub-County Wards
+  '47005': [
+    { id: '47005001', name: 'Laini Saba', type: 'ward', parent_id: '47005' },
+    { id: '47005002', name: 'Lindi', type: 'ward', parent_id: '47005' },
+    { id: '47005003', name: 'Makina', type: 'ward', parent_id: '47005' }
+  ],
+
+  // Roysambu Sub-County Wards
+  '47006': [
+    { id: '47006001', name: 'Githurai', type: 'ward', parent_id: '47006' },
+    { id: '47006002', name: 'Kahawa West', type: 'ward', parent_id: '47006' },
+    { id: '47006003', name: 'Zimmerman', type: 'ward', parent_id: '47006' }
+  ],
+
+  // Kasarani Sub-County Wards
+  '47007': [
+    { id: '47007001', name: 'Clay City', type: 'ward', parent_id: '47007' },
+    { id: '47007002', name: 'Mwiki', type: 'ward', parent_id: '47007' },
+    { id: '47007003', name: 'Kasarani', type: 'ward', parent_id: '47007' }
+  ],
+
+  // Ruaraka Sub-County Wards
+  '47008': [
+    { id: '47008001', name: 'Baba Dogo', type: 'ward', parent_id: '47008' },
+    { id: '47008002', name: 'Utalii', type: 'ward', parent_id: '47008' },
+    { id: '47008003', name: 'Mathare North', type: 'ward', parent_id: '47008' }
+  ],
+
+  // Embakasi South Sub-County Wards
+  '47009': [
+    { id: '47009001', name: 'Imara Daima', type: 'ward', parent_id: '47009' },
+    { id: '47009002', name: 'Kwa Njenga', type: 'ward', parent_id: '47009' },
+    { id: '47009003', name: 'Kwa Reuben', type: 'ward', parent_id: '47009' }
+  ],
+
+  // Embakasi North Sub-County Wards
+  '47010': [
+    { id: '47010001', name: 'Kariobangi North', type: 'ward', parent_id: '47010' },
+    { id: '47010002', name: 'Dandora Area I', type: 'ward', parent_id: '47010' },
+    { id: '47010003', name: 'Dandora Area II', type: 'ward', parent_id: '47010' }
+  ],
+
+  // Embakasi Central Sub-County Wards
+  '47011': [
+    { id: '47011001', name: 'Kayole North', type: 'ward', parent_id: '47011' },
+    { id: '47011002', name: 'Kayole Central', type: 'ward', parent_id: '47011' },
+    { id: '47011003', name: 'Kayole South', type: 'ward', parent_id: '47011' }
+  ],
+
+  // Embakasi East Sub-County Wards
+  '47012': [
+    { id: '47012001', name: 'Utawala', type: 'ward', parent_id: '47012' },
+    { id: '47012002', name: 'Mihang\'o', type: 'ward', parent_id: '47012' },
+    { id: '47012003', name: 'Lower Savannah', type: 'ward', parent_id: '47012' }
+  ],
+
+  // Embakasi West Sub-County Wards
+  '47013': [
+    { id: '47013001', name: 'Umoja I', type: 'ward', parent_id: '47013' },
+    { id: '47013002', name: 'Umoja II', type: 'ward', parent_id: '47013' },
+    { id: '47013003', name: 'Mowlem', type: 'ward', parent_id: '47013' }
+  ],
+
+  // Makadara Sub-County Wards
+  '47014': [
+    { id: '47014001', name: 'Maringo/Hamza', type: 'ward', parent_id: '47014' },
+    { id: '47014002', name: 'Viwandani', type: 'ward', parent_id: '47014' },
+    { id: '47014003', name: 'Harambee', type: 'ward', parent_id: '47014' }
+  ],
+
+  // Kamukunji Sub-County Wards
+  '47015': [
+    { id: '47015001', name: 'Pumwani', type: 'ward', parent_id: '47015' },
+    { id: '47015002', name: 'Eastleigh North', type: 'ward', parent_id: '47015' },
+    { id: '47015003', name: 'Eastleigh South', type: 'ward', parent_id: '47015' }
+  ],
+
+  // Starehe Sub-County Wards
+  '47016': [
+    { id: '47016001', name: 'Nairobi Central', type: 'ward', parent_id: '47016' },
+    { id: '47016002', name: 'Ngara', type: 'ward', parent_id: '47016' },
+    { id: '47016003', name: 'Pangani', type: 'ward', parent_id: '47016' }
+  ],
+
+  // Mathare Sub-County Wards
+  '47017': [
+    { id: '47017001', name: 'Hospital', type: 'ward', parent_id: '47017' },
+    { id: '47017002', name: 'Mabatini', type: 'ward', parent_id: '47017' },
+    { id: '47017003', name: 'Huruma', type: 'ward', parent_id: '47017' }
+  ],
+
+  // Mombasa - Kisauni Wards
+  '103': [
+    { id: '10301', name: 'Mtongwe', type: 'ward', parent_id: '103' },
+    { id: '10302', name: 'Shika Adabu', type: 'ward', parent_id: '103' },
+    { id: '10303', name: 'Bofu', type: 'ward', parent_id: '103' }
+  ],
+
+  // Mombasa - Likoni Wards
+  '104': [
+    { id: '10401', name: 'Likoni', type: 'ward', parent_id: '104' },
+    { id: '10402', name: 'Timbwani', type: 'ward', parent_id: '104' },
+    { id: '10403', name: 'Shika Adabu', type: 'ward', parent_id: '104' }
+  ],
+
+  // Mombasa - Mvita Wards
+  '105': [
+    { id: '10501', name: 'Mji wa Kale', type: 'ward', parent_id: '105' },
+    { id: '10502', name: 'Tudor', type: 'ward', parent_id: '105' },
+    { id: '10503', name: 'Tononoka', type: 'ward', parent_id: '105' }
+  ],
+
+  // Mombasa - Nyali Wards
+  '106': [
+    { id: '10601', name: 'Kongowea', type: 'ward', parent_id: '106' },
+    { id: '10602', name: 'Kadzandani', type: 'ward', parent_id: '106' },
+    { id: '10603', name: 'Mkomani', type: 'ward', parent_id: '106' }
+  ],
+
+  // Kisumu - Kisumu East Wards
+  '4202': [
+    { id: '420201', name: 'Kajulu', type: 'ward', parent_id: '4202' },
+    { id: '420202', name: 'Kolwa East', type: 'ward', parent_id: '4202' },
+    { id: '420203', name: 'Manyatta B', type: 'ward', parent_id: '4202' }
+  ],
+
+  // Kisumu - Kisumu West Wards
+  '4203': [
+    { id: '420301', name: 'South West Kisumu', type: 'ward', parent_id: '4203' },
+    { id: '420302', name: 'Central Kisumu', type: 'ward', parent_id: '4203' },
+    { id: '420303', name: 'Kisumu North', type: 'ward', parent_id: '4203' }
+  ],
+
+  // Kisumu - Seme Wards
+  '4204': [
+    { id: '420401', name: 'West Seme', type: 'ward', parent_id: '4204' },
+    { id: '420402', name: 'Central Seme', type: 'ward', parent_id: '4204' },
+    { id: '420403', name: 'East Seme', type: 'ward', parent_id: '4204' }
+  ],
+
+  // Kisumu - Muhoroni Wards
+  '4205': [
+    { id: '420501', name: 'South East Nyakach', type: 'ward', parent_id: '4205' },
+    { id: '420502', name: 'North East Nyakach', type: 'ward', parent_id: '4205' },
+    { id: '420503', name: 'West Nyakach', type: 'ward', parent_id: '4205' }
+  ],
+
+  // Kisumu - Nyando Wards
+  '4206': [
+    { id: '420601', name: 'Upper Nyakach', type: 'ward', parent_id: '4206' },
+    { id: '420602', name: 'South Nyakach', type: 'ward', parent_id: '4206' },
+    { id: '420603', name: 'Lower Nyakach', type: 'ward', parent_id: '4206' }
+  ],
+
+  // Kisumu - Nyakach Wards
+  '4207': [
+    { id: '420701', name: 'Kano Plains', type: 'ward', parent_id: '4207' },
+    { id: '420702', name: 'Kabonyo', type: 'ward', parent_id: '4207' },
+    { id: '420703', name: 'Kobura', type: 'ward', parent_id: '4207' }
+  ],
+
+  // Nakuru - Nakuru Town West Wards
+  '3202': [
+    { id: '320201', name: 'Barut', type: 'ward', parent_id: '3202' },
+    { id: '320202', name: 'London', type: 'ward', parent_id: '3202' },
+    { id: '320203', name: 'Kaptembwa', type: 'ward', parent_id: '3202' }
+  ],
+
+  // Nakuru - Njoro Wards
+  '3203': [
+    { id: '320301', name: 'Njoro', type: 'ward', parent_id: '3203' },
+    { id: '320302', name: 'Mau Narok', type: 'ward', parent_id: '3203' },
+    { id: '320303', name: 'Mauche', type: 'ward', parent_id: '3203' }
+  ],
+
+  // Nakuru - Molo Wards
+  '3204': [
+    { id: '320401', name: 'Molo', type: 'ward', parent_id: '3204' },
+    { id: '320402', name: 'Elburgon', type: 'ward', parent_id: '3204' },
+    { id: '320403', name: 'Turin', type: 'ward', parent_id: '3204' }
+  ],
+
+  // Nakuru - Gilgil Wards
+  '3205': [
+    { id: '320501', name: 'Gilgil', type: 'ward', parent_id: '3205' },
+    { id: '320502', name: 'Elementaita', type: 'ward', parent_id: '3205' },
+    { id: '320503', name: 'Mbaruk', type: 'ward', parent_id: '3205' }
+  ],
+
+  // Nakuru - Naivasha Wards
+  '3206': [
+    { id: '320601', name: 'Naivasha East', type: 'ward', parent_id: '3206' },
+    { id: '320602', name: 'Naivasha West', type: 'ward', parent_id: '3206' },
+    { id: '320603', name: 'Mai Mahiu', type: 'ward', parent_id: '3206' }
+  ],
+
+  // Nakuru - Kuresoi South Wards
+  '3207': [
+    { id: '320701', name: 'Keringet', type: 'ward', parent_id: '3207' },
+    { id: '320702', name: 'Tinet', type: 'ward', parent_id: '3207' },
+    { id: '320703', name: 'Kiptangich', type: 'ward', parent_id: '3207' }
+  ],
+
+  // Nakuru - Kuresoi North Wards
+  '3208': [
+    { id: '320801', name: 'Olenguruone', type: 'ward', parent_id: '3208' },
+    { id: '320802', name: 'Kiptororo', type: 'ward', parent_id: '3208' },
+    { id: '320803', name: 'Nyota', type: 'ward', parent_id: '3208' }
+  ],
+
+  // Nakuru - Subukia Wards
+  '3209': [
+    { id: '320901', name: 'Subukia', type: 'ward', parent_id: '3209' },
+    { id: '320902', name: 'Waseges', type: 'ward', parent_id: '3209' },
+    { id: '320903', name: 'Kabazi', type: 'ward', parent_id: '3209' }
+  ],
+
+  // Nakuru - Rongai Wards
+  '3210': [
+    { id: '321001', name: 'Rongai', type: 'ward', parent_id: '3210' },
+    { id: '321002', name: 'Solai', type: 'ward', parent_id: '3210' },
+    { id: '321003', name: 'Menengai', type: 'ward', parent_id: '3210' }
+  ],
+
+  // Nakuru - Bahati Wards
+  '3211': [
+    { id: '321101', name: 'Bahati', type: 'ward', parent_id: '3211' },
+    { id: '321102', name: 'Dundori', type: 'ward', parent_id: '3211' },
+    { id: '321103', name: 'Kabatini', type: 'ward', parent_id: '3211' }
+  ],
+
+  // Uasin Gishu - Kapseret Wards
+  '2702': [
+    { id: '270201', name: 'Kapseret', type: 'ward', parent_id: '2702' },
+    { id: '270202', name: 'Kipkenyo', type: 'ward', parent_id: '2702' },
+    { id: '270203', name: 'Langas', type: 'ward', parent_id: '2702' }
+  ],
+
+  // Uasin Gishu - Kesses Wards
+  '2703': [
+    { id: '270301', name: 'Kesses', type: 'ward', parent_id: '2703' },
+    { id: '270302', name: 'Cheptiret', type: 'ward', parent_id: '2703' },
+    { id: '270303', name: 'Tulwet', type: 'ward', parent_id: '2703' }
+  ],
+
+  // Uasin Gishu - Moiben Wards
+  '2704': [
+    { id: '270401', name: 'Moiben', type: 'ward', parent_id: '2704' },
+    { id: '270402', name: 'Kimumu', type: 'ward', parent_id: '2704' },
+    { id: '270403', name: 'Sergoit', type: 'ward', parent_id: '2704' }
+  ],
+
+  // Uasin Gishu - Soy Wards
+  '2705': [
+    { id: '270501', name: 'Soy', type: 'ward', parent_id: '2705' },
+    { id: '270502', name: 'Kuinet', type: 'ward', parent_id: '2705' },
+    { id: '270503', name: 'Ziwa', type: 'ward', parent_id: '2705' }
+  ],
+
+  // Uasin Gishu - Turbo Wards
+  '2706': [
+    { id: '270601', name: 'Turbo', type: 'ward', parent_id: '2706' },
+    { id: '270602', name: 'Kamagut', type: 'ward', parent_id: '2706' },
+    { id: '270603', name: 'Huruma', type: 'ward', parent_id: '2706' }
+  ],
+
+  // Kiambu - Gatundu South Wards
+  '2202': [
+    { id: '220201', name: 'Gatundu South', type: 'ward', parent_id: '2202' },
+    { id: '220202', name: 'Kiamwangi', type: 'ward', parent_id: '2202' },
+    { id: '220203', name: 'Kiganjo', type: 'ward', parent_id: '2202' }
+  ],
+
+  // Kiambu - Githunguri Wards
+  '2203': [
+    { id: '220301', name: 'Githunguri', type: 'ward', parent_id: '2203' },
+    { id: '220302', name: 'Githiga', type: 'ward', parent_id: '2203' },
+    { id: '220303', name: 'Ikinu', type: 'ward', parent_id: '2203' }
+  ],
+
+  // Kiambu - Juja Wards
+  '2204': [
+    { id: '220401', name: 'Juja', type: 'ward', parent_id: '2204' },
+    { id: '220402', name: 'Witeithie', type: 'ward', parent_id: '2204' },
+    { id: '220403', name: 'Kalimoni', type: 'ward', parent_id: '2204' }
+  ],
+
+  // Kiambu - Kabete Wards
+  '2205': [
+    { id: '220501', name: 'Kabete', type: 'ward', parent_id: '2205' },
+    { id: '220502', name: 'Uthiru', type: 'ward', parent_id: '2205' },
+    { id: '220503', name: 'Muguga', type: 'ward', parent_id: '2205' }
+  ],
+
+  // Kiambu - Kiambaa Wards
+  '2206': [
+    { id: '220601', name: 'Kiambaa', type: 'ward', parent_id: '2206' },
+    { id: '220602', name: 'Ndenderu', type: 'ward', parent_id: '2206' },
+    { id: '220603', name: 'Ruiru', type: 'ward', parent_id: '2206' }
+  ],
+
+  // Kiambu - Kiambu Wards
+  '2207': [
+    { id: '220701', name: 'Kiambu', type: 'ward', parent_id: '2207' },
+    { id: '220702', name: 'Ting\'ang\'a', type: 'ward', parent_id: '2207' },
+    { id: '220703', name: 'Township', type: 'ward', parent_id: '2207' }
+  ],
+
+  // Kiambu - Kikuyu Wards
+  '2208': [
+    { id: '220801', name: 'Kikuyu', type: 'ward', parent_id: '2208' },
+    { id: '220802', name: 'Karai', type: 'ward', parent_id: '2208' },
+    { id: '220803', name: 'Nachu', type: 'ward', parent_id: '2208' }
+  ],
+
+  // Kiambu - Limuru Wards
+  '2209': [
+    { id: '220901', name: 'Limuru', type: 'ward', parent_id: '2209' },
+    { id: '220902', name: 'Ndeiya', type: 'ward', parent_id: '2209' },
+    { id: '220903', name: 'Kinale', type: 'ward', parent_id: '2209' }
+  ],
+
+  // Kiambu - Ruiru Wards
+  '2210': [
+    { id: '221001', name: 'Ruiru', type: 'ward', parent_id: '2210' },
+    { id: '221002', name: 'Kamakis', type: 'ward', parent_id: '2210' },
+    { id: '221003', name: 'Kahawa Sukari', type: 'ward', parent_id: '2210' }
+  ],
+
+  // Kiambu - Thika Town Wards
+  '2211': [
+    { id: '221101', name: 'Thika Town', type: 'ward', parent_id: '2211' },
+    { id: '221102', name: 'Gatuanyaga', type: 'ward', parent_id: '2211' },
+    { id: '221103', name: 'Ngoliba', type: 'ward', parent_id: '2211' }
+  ],
+
+  // Kiambu - Lari Wards
+  '2212': [
+    { id: '221201', name: 'Lari', type: 'ward', parent_id: '2212' },
+    { id: '221202', name: 'Kirenga', type: 'ward', parent_id: '2212' },
+    { id: '221203', name: 'Kamburu', type: 'ward', parent_id: '2212' }
+  ],
+
+  // Machakos - Machakos Town Wards
+  '1602': [
+    { id: '160201', name: 'Machakos Town', type: 'ward', parent_id: '1602' },
+    { id: '160202', name: 'Masinga', type: 'ward', parent_id: '1602' },
+    { id: '160203', name: 'Mutituni', type: 'ward', parent_id: '1602' }
+  ],
+
+  // Machakos - Masinga Wards
+  '1603': [
+    { id: '160301', name: 'Masinga', type: 'ward', parent_id: '1603' },
+    { id: '160302', name: 'Central', type: 'ward', parent_id: '1603' },
+    { id: '160303', name: 'Kivaa', type: 'ward', parent_id: '1603' }
+  ],
+
+  // Machakos - Matungulu Wards
+  '1604': [
+    { id: '160401', name: 'Matungulu', type: 'ward', parent_id: '1604' },
+    { id: '160402', name: 'Tala', type: 'ward', parent_id: '1604' },
+    { id: '160403', name: 'Kangundo', type: 'ward', parent_id: '1604' }
+  ],
+
+  // Machakos - Mavoko Wards
+  '1605': [
+    { id: '160501', name: 'Mavoko', type: 'ward', parent_id: '1605' },
+    { id: '160502', name: 'Athi River', type: 'ward', parent_id: '1605' },
+    { id: '160503', name: 'Kinanie', type: 'ward', parent_id: '1605' }
+  ],
+
+  // Machakos - Mwala Wards
+  '1606': [
+    { id: '160601', name: 'Mwala', type: 'ward', parent_id: '1606' },
+    { id: '160602', name: 'Masii', type: 'ward', parent_id: '1606' },
+    { id: '160603', name: 'Muthetheni', type: 'ward', parent_id: '1606' }
+  ],
+
+  // Machakos - Yatta Wards
+  '1607': [
+    { id: '160701', name: 'Yatta', type: 'ward', parent_id: '1607' },
+    { id: '160702', name: 'Kithimani', type: 'ward', parent_id: '1607' },
+    { id: '160703', name: 'Kanyangi', type: 'ward', parent_id: '1607' }
+  ],
+
+  // Machakos - Kangundo Wards
+  '1608': [
+    { id: '160801', name: 'Kangundo', type: 'ward', parent_id: '1608' },
+    { id: '160802', name: 'Matungulu', type: 'ward', parent_id: '1608' },
+    { id: '160803', name: 'Tala', type: 'ward', parent_id: '1608' }
+  ],
+
+  // Bungoma - Kabuchai Wards
+  '3902': [
+    { id: '390201', name: 'Kabuchai', type: 'ward', parent_id: '3902' },
+    { id: '390202', name: 'Chwele', type: 'ward', parent_id: '3902' },
+    { id: '390203', name: 'West Nalondo', type: 'ward', parent_id: '3902' }
+  ],
+
+  // Bungoma - Kanduyi Wards
+  '3903': [
+    { id: '390301', name: 'Kanduyi', type: 'ward', parent_id: '3903' },
+    { id: '390302', name: 'Webuye', type: 'ward', parent_id: '3903' },
+    { id: '390303', name: 'Bokoli', type: 'ward', parent_id: '3903' }
+  ],
+
+  // Bungoma - Kimilili Wards
+  '3904': [
+    { id: '390401', name: 'Kimilili', type: 'ward', parent_id: '3904' },
+    { id: '390402', name: 'Maeni', type: 'ward', parent_id: '3904' },
+    { id: '390403', name: 'Kamukuywa', type: 'ward', parent_id: '3904' }
+  ],
+
+  // Bungoma - Mt. Elgon Wards
+  '3905': [
+    { id: '390501', name: 'Mt. Elgon', type: 'ward', parent_id: '3905' },
+    { id: '390502', name: 'Cheptais', type: 'ward', parent_id: '3905' },
+    { id: '390503', name: 'Kapsokwony', type: 'ward', parent_id: '3905' }
+  ],
+
+  // Bungoma - Sirisia Wards
+  '3906': [
+    { id: '390601', name: 'Sirisia', type: 'ward', parent_id: '3906' },
+    { id: '390602', name: 'Malakisi', type: 'ward', parent_id: '3906' },
+    { id: '390603', name: 'South Kulisiru', type: 'ward', parent_id: '3906' }
+  ],
+
+  // Bungoma - Tongaren Wards
+  '3907': [
+    { id: '390701', name: 'Tongaren', type: 'ward', parent_id: '3907' },
+    { id: '390702', name: 'Naitiri', type: 'ward', parent_id: '3907' },
+    { id: '390703', name: 'Tongaren Central', type: 'ward', parent_id: '3907' }
+  ],
+
+  // Bungoma - Webuye East Wards
+  '3908': [
+    { id: '390801', name: 'Webuye East', type: 'ward', parent_id: '3908' },
+    { id: '390802', name: 'Webuye West', type:
 };
 
 export const useLocations = () => {
