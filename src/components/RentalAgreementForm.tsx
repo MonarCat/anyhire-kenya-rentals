@@ -39,8 +39,10 @@ const RentalAgreementForm: React.FC<RentalAgreementFormProps> = ({
     window.print();
   };
 
-  const serviceCharge = Math.round(rentalDetails.totalAmount * 0.05);
-  const ownerReceives = rentalDetails.totalAmount - serviceCharge;
+  const currentDate = new Date();
+  const day = format(currentDate, 'dd');
+  const month = format(currentDate, 'MMMM');
+  const year = format(currentDate, 'yyyy');
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white">
@@ -51,135 +53,221 @@ const RentalAgreementForm: React.FC<RentalAgreementFormProps> = ({
             <Logo size="lg" />
             <div>
               <h1 className="text-3xl font-bold text-blue-600">AnyHire Kenya</h1>
-              <p className="text-gray-600">Rental Agreement</p>
+              <p className="text-gray-600">Legal Rental Agreement</p>
             </div>
           </div>
           <div className="text-right text-sm text-gray-600">
-            <p>Agreement Date: {format(new Date(), 'dd/MM/yyyy')}</p>
+            <p>Generated: {format(currentDate, 'dd/MM/yyyy')}</p>
             <p>www.anyhire.co.ke</p>
           </div>
         </div>
 
         {/* Agreement Content */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl text-center">RENTAL AGREEMENT</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Parties */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3 text-blue-600">OWNER (Lessor)</h3>
-                <div className="space-y-2">
-                  <p><strong>Name:</strong> {itemDetails.owner.fullName}</p>
-                  <p><strong>Phone:</strong> {itemDetails.owner.phone}</p>
-                  <p><strong>Email:</strong> {itemDetails.owner.email}</p>
+        <div className="space-y-6 text-sm leading-relaxed">
+          {/* Title */}
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">RENTAL AGREEMENT</h2>
+            <p className="mb-6">
+              <strong>This Rental Agreement</strong> ("Agreement") is made and entered into on this{" "}
+              <span className="underline font-semibold">{day}</span> day of{" "}
+              <span className="underline font-semibold">{month}</span>, <span className="underline font-semibold">{year}</span>, by and between:
+            </p>
+          </div>
+
+          {/* Section 1: Owner Information */}
+          <div className="border-2 border-gray-300 p-4 rounded-lg">
+            <h3 className="text-lg font-bold mb-3 text-blue-600">1. OWNER INFORMATION</h3>
+            <div className="space-y-2">
+              <p>Full Name: <span className="underline font-semibold">{itemDetails.owner.fullName}</span></p>
+              <p>Entity Type (Individual/Retailer/Company/Corporation): <span className="underline">Individual</span></p>
+              <p>Identification Number (ID/Passport/Company Reg. No.): ___________________________</p>
+              <p>Address: ________________________________________________________________</p>
+              <p>Phone Number: <span className="underline font-semibold">{itemDetails.owner.phone}</span></p>
+              <p>Email Address: <span className="underline font-semibold">{itemDetails.owner.email}</span></p>
+            </div>
+          </div>
+
+          {/* Section 2: Renter Information */}
+          <div className="border-2 border-gray-300 p-4 rounded-lg">
+            <h3 className="text-lg font-bold mb-3 text-blue-600">2. RENTER INFORMATION</h3>
+            <div className="space-y-2">
+              <p>Full Name: <span className="underline font-semibold">{renterDetails.fullName}</span></p>
+              <p>Entity Type (Individual/Retailer/Company/Corporation): <span className="underline">Individual</span></p>
+              <p>Identification Number (ID/Passport/Company Reg. No.): <span className="underline font-semibold">{renterDetails.idNumber}</span></p>
+              <p>Address: ________________________________________________________________</p>
+              <p>Phone Number: <span className="underline font-semibold">{renterDetails.phone}</span></p>
+              <p>Email Address: <span className="underline font-semibold">{renterDetails.email}</span></p>
+            </div>
+          </div>
+
+          {/* Section 3: Item Details */}
+          <div className="border-2 border-gray-300 p-4 rounded-lg">
+            <h3 className="text-lg font-bold mb-3 text-blue-600">3. ITEM(S) DETAILS</h3>
+            <div className="space-y-2">
+              <p>Item Description: <span className="underline font-semibold">{itemDetails.title} - {itemDetails.description}</span></p>
+              <p>Model/Make: ________________________________________________________________</p>
+              <p>Serial Number(s): ________________________________________________________________</p>
+              <div className="mt-3">
+                <p className="font-semibold">Condition at Time of Rental (Tick as applicable):</p>
+                <div className="mt-2 space-y-1">
+                  <p>[ ] Perfect</p>
+                  <p>[ ] Good</p>
+                  <p>[ ] Fair</p>
+                  <p>[ ] Malfunctioning</p>
+                  <p>[ ] Other: ________________________________________________________________</p>
                 </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-3 text-blue-600">RENTER (Lessee)</h3>
-                <div className="space-y-2">
-                  <p><strong>Name:</strong> {renterDetails.fullName}</p>
-                  <p><strong>Phone:</strong> {renterDetails.phone}</p>
-                  <p><strong>Email:</strong> {renterDetails.email}</p>
-                  <p><strong>ID Number:</strong> {renterDetails.idNumber}</p>
+            </div>
+          </div>
+
+          {/* Section 4: Terms of Agreement */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-blue-600">4. TERMS OF AGREEMENT</h3>
+            
+            <div>
+              <h4 className="font-semibold">4.1. Payment Terms:</h4>
+              <p>Payment shall be made via the official platform <a href="https://anyhire.co.ke" className="text-blue-600 underline">https://anyhire.co.ke</a> and must reflect the Renter's full official name. The Owner is under no obligation to release the item until successful payment confirmation is received via the site.</p>
+              <div className="mt-2 bg-blue-50 p-3 rounded">
+                <p><strong>Rental Amount:</strong> KES {rentalDetails.totalAmount.toLocaleString()} ({itemDetails.pricePeriod})</p>
+                <p><strong>Security Deposit:</strong> KES {rentalDetails.securityDeposit.toLocaleString()}</p>
+                <p><strong>Total Payment:</strong> KES {(rentalDetails.totalAmount + rentalDetails.securityDeposit).toLocaleString()}</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.2. Item Verification and Inspection:</h4>
+              <p>The Owner is required to:</p>
+              <ul className="list-disc list-inside ml-4">
+                <li>Present the item to the Renter for thorough inspection.</li>
+                <li>Confirm with the Renter that the item is in perfect working condition.</li>
+              </ul>
+              <p>The Renter shall:</p>
+              <ul className="list-disc list-inside ml-4">
+                <li>Only proceed with payment if fully satisfied with the condition of the item.</li>
+                <li>Reserve the right to reject or request an alternative item if the presented one is not in proper condition.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.3. Identification and Verification:</h4>
+              <p>The Owner must:</p>
+              <ul className="list-disc list-inside ml-4">
+                <li>Demand an original identification document from the Renter.</li>
+                <li>Take a clear photo of the Renter alongside the document.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.4. Collection and Return:</h4>
+              <ul className="list-disc list-inside ml-4">
+                <li>Item(s) will only be released after payment is confirmed and this agreement is signed by both parties.</li>
+                <li>Both parties must agree on a strict return date and time, recorded as:</li>
+              </ul>
+              <div className="mt-2 bg-yellow-50 p-3 rounded">
+                <p>Return Date: <span className="underline font-semibold">{format(new Date(rentalDetails.endDate), 'dd/MM/yyyy')}</span>   Time: <span className="underline">________________</span></p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.5. Legal Standing and Witness:</h4>
+              <p>AnyHire Limited, through the platform <a href="https://anyhire.co.ke" className="text-blue-600 underline">https://anyhire.co.ke</a>, acts as a neutral intermediary and the legal witness to this agreement <strong>only</strong> if the payment is made via the platform.</p>
+              <p className="mt-2">This agreement shall have a unique tracking number auto-generated upon downloading from the platform, serving as a reference ID for all transactions. Upon being completed and signed by both parties, a scanned copy must be uploaded back to the platform. Once verified and linked to a successful transaction, a digital signature will be generated and affixed to the agreement. This digitally signed version becomes the official and legally valid copy available for both parties to download and retain.</p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.6. Liability and Fraud Mitigation:</h4>
+              <ul className="list-disc list-inside ml-4">
+                <li>The Renter shall be held legally liable for any loss, damage, or disappearance of the rented item.</li>
+                <li>The Owner shall be liable if it is established that the item was faulty or stolen, causing loss or harm to the Renter.</li>
+                <li>In either case, AnyHire Limited will provide both parties' official records for legal action or warrant issuance.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.7. Legal Reference:</h4>
+              <p>This agreement is governed by the relevant laws of Kenya, including but not limited to:</p>
+              <ul className="list-disc list-inside ml-4">
+                <li>The Law of Contract Act (Cap 23, Laws of Kenya)</li>
+                <li>The Penal Code (Cap 63, with respect to fraud and theft)</li>
+                <li>The Consumer Protection Act, 2012</li>
+                <li>The Data Protection Act, 2019</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.8. Dispute Resolution:</h4>
+              <p>All disputes arising from this Agreement shall first be resolved amicably between the parties. If unresolved, the matter shall be referred to arbitration in Nairobi, Kenya under the Arbitration Act (Cap 49).</p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold">4.9. Agreement Validity:</h4>
+              <p>This Agreement becomes legally binding once:</p>
+              <ul className="list-disc list-inside ml-4">
+                <li>Both parties sign below;</li>
+                <li>Payment is successfully made via <a href="https://anyhire.co.ke" className="text-blue-600 underline">https://anyhire.co.ke</a>;</li>
+                <li>Verification steps above have been completed.</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Section 5: Signatures */}
+          <div className="border-t-2 border-gray-400 pt-6">
+            <h3 className="text-lg font-bold mb-6 text-blue-600">5. SIGNATURES</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="border border-gray-300 p-4 rounded">
+                <h4 className="font-bold mb-4">OWNER REPRESENTATIVE</h4>
+                <div className="space-y-4">
+                  <p>Name: <span className="underline">{itemDetails.owner.fullName}</span></p>
+                  <div>
+                    <p>Signature: ________________________________</p>
+                    <div className="h-12 border-b border-gray-300 mb-2"></div>
+                  </div>
+                  <p>Date: <span className="underline">{format(currentDate, 'dd/MM/yyyy')}</span></p>
+                </div>
+              </div>
+
+              <div className="border border-gray-300 p-4 rounded">
+                <h4 className="font-bold mb-4">RENTER REPRESENTATIVE</h4>
+                <div className="space-y-4">
+                  <p>Name: <span className="underline">{renterDetails.fullName}</span></p>
+                  <div>
+                    <p>Signature: ________________________________</p>
+                    <div className="h-12 border-b border-gray-300 mb-2"></div>
+                  </div>
+                  <p>Date: <span className="underline">{format(currentDate, 'dd/MM/yyyy')}</span></p>
                 </div>
               </div>
             </div>
 
-            {/* Item Details */}
-            <div>
-              <h3 className="font-semibold text-lg mb-3 text-blue-600">RENTAL ITEM</h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p><strong>Item:</strong> {itemDetails.title}</p>
-                <p><strong>Description:</strong> {itemDetails.description}</p>
-                <p><strong>Rental Rate:</strong> KES {itemDetails.price.toLocaleString()} {itemDetails.pricePeriod}</p>
-              </div>
-            </div>
-
-            {/* Rental Terms */}
-            <div>
-              <h3 className="font-semibold text-lg mb-3 text-blue-600">RENTAL TERMS</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border-2 border-blue-200 bg-blue-50 p-4 rounded">
+              <h4 className="font-bold mb-4 text-blue-800">ANYHIRE LIMITED WITNESS</h4>
+              <p className="text-sm italic mb-3">(Valid only upon confirmed payment via AnyHire)</p>
+              <div className="space-y-3">
+                <p>Transaction Tracking ID: ________________________________</p>
+                <p>Authorized Agent Name: ________________________________</p>
                 <div>
-                  <p><strong>Start Date:</strong> {format(new Date(rentalDetails.startDate), 'dd/MM/yyyy')}</p>
-                  <p><strong>End Date:</strong> {format(new Date(rentalDetails.endDate), 'dd/MM/yyyy')}</p>
+                  <p>Signature: ________________________________</p>
+                  <div className="h-12 border-b border-gray-400 mb-2"></div>
                 </div>
-                <div>
-                  <p><strong>Total Amount:</strong> KES {rentalDetails.totalAmount.toLocaleString()}</p>
-                  <p><strong>Security Deposit:</strong> KES {rentalDetails.securityDeposit.toLocaleString()}</p>
-                </div>
+                <p>Date: ________________________________</p>
               </div>
             </div>
+          </div>
 
-            {/* Payment Breakdown */}
-            <div>
-              <h3 className="font-semibold text-lg mb-3 text-blue-600">PAYMENT BREAKDOWN</h3>
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Rental Amount:</span>
-                    <span>KES {rentalDetails.totalAmount.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-red-600">
-                    <span>AnyHire Service Charge (5%):</span>
-                    <span>- KES {serviceCharge.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold border-t pt-2">
-                    <span>Owner Receives:</span>
-                    <span>KES {ownerReceives.toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Terms and Conditions */}
-            <div>
-              <h3 className="font-semibold text-lg mb-3 text-blue-600">TERMS AND CONDITIONS</h3>
-              <div className="text-sm space-y-2">
-                <p>1. The renter agrees to use the item responsibly and return it in the same condition as received.</p>
-                <p>2. Any damage beyond normal wear and tear will be deducted from the security deposit.</p>
-                <p>3. Late return fees may apply as per AnyHire's standard rates.</p>
-                <p>4. Payment is processed through AnyHire platform with 5% service charge.</p>
-                <p>5. Both parties agree to AnyHire's Terms of Service and Privacy Policy.</p>
-                <p>6. Any disputes will be resolved through AnyHire's dispute resolution process.</p>
-                <p>7. This agreement is governed by the laws of Kenya.</p>
-              </div>
-            </div>
-
-            {/* Signatures */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-              <div>
-                <div className="border-t-2 border-gray-300 pt-4">
-                  <p className="text-center font-semibold">OWNER SIGNATURE</p>
-                  <div className="h-16 mb-2"></div>
-                  <p className="text-center text-sm">Date: ___________</p>
-                </div>
-              </div>
-              <div>
-                <div className="border-t-2 border-gray-300 pt-4">
-                  <p className="text-center font-semibold">RENTER SIGNATURE</p>
-                  <div className="h-16 mb-2"></div>
-                  <p className="text-center text-sm">Date: ___________</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
-        <div className="text-center text-xs text-gray-500 border-t pt-4">
-          <p>This agreement is facilitated by AnyHire Kenya - Kenya's Premier Rental Marketplace</p>
-          <p>For support, contact us at support@anyhire.co.ke or +254 700 000 000</p>
+          {/* Footer Note */}
+          <div className="border-t border-gray-300 pt-4 text-xs text-gray-600 italic">
+            <p>This document should be retained by both parties and a copy uploaded or logged in the AnyHire transaction record. A digitally signed version shall be made available to both parties upon validation.</p>
+          </div>
         </div>
 
         {/* Print Button (hidden in print) */}
-        <div className="text-center mt-6 print:hidden">
+        <div className="text-center mt-8 print:hidden">
           <button
             onClick={printAgreement}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-lg"
           >
-            Print Agreement
+            Print Legal Agreement
           </button>
         </div>
       </div>
