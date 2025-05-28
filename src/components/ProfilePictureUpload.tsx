@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,8 +5,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { resizeAndCompressImage, cropImageToSquare } from '@/utils/imageUtils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
+import {
+  resizeAndCompressImage,
+  cropImageToSquare
+} from '@/utils/imageUtils';
 
 interface ProfilePictureUploadProps {
   currentImageUrl?: string;
@@ -27,7 +36,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Cleanup function for camera stream
   useEffect(() => {
     return () => {
       if (stream) {
@@ -48,39 +56,32 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
     setUploading(true);
     try {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         throw new Error('Please upload an image file');
       }
 
-      // Validate file size (max 10MB before processing)
       if (file.size > 10 * 1024 * 1024) {
         throw new Error('File size must be less than 10MB');
       }
 
       console.log('Processing image...', { originalSize: file.size });
 
-      // Process the image: crop to square and compress
       let processedFile = await cropImageToSquare(file);
       processedFile = await resizeAndCompressImage(processedFile, 400, 400, 0.8);
 
-      console.log('Image processed:', { 
-        originalSize: file.size, 
+      console.log('Image processed:', {
+        originalSize: file.size,
         processedSize: processedFile.size,
         compressionRatio: ((file.size - processedFile.size) / file.size * 100).toFixed(1) + '%'
       });
 
-      const fileExt = 'jpg'; // Always use jpg for consistency
-      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/avatar-${Date.now()}.jpg`;
 
-      console.log('Uploading image to:', fileName);
-
-      // Delete old avatar if exists
       try {
         const { data: existingFiles } = await supabase.storage
           .from('avatars')
           .list(user.id);
-        
+
         if (existingFiles && existingFiles.length > 0) {
           const filesToDelete = existingFiles.map(file => `${user.id}/${file.name}`);
           await supabase.storage
@@ -92,10 +93,9 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         console.log('No old files to clean up or cleanup failed:', cleanupError);
       }
 
-      // Upload to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
         .from('avatars')
-        .upload(fileName, processedFile, { 
+        .upload(fileName, processedFile, {
           cacheControl: '3600',
           upsert: true,
           contentType: 'image/jpeg'
@@ -106,17 +106,13 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      console.log('Upload successful:', data);
-
-      // Get public URL with timestamp to avoid caching issues
-      const { data: { publicUrl } } = supabase.storage
+      const { publicUrl } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
       const finalUrl = `${publicUrl}?t=${Date.now()}`;
       console.log('Image uploaded successfully:', finalUrl);
 
-      // Update profile with new avatar URL
       await updateProfile({ avatar_url: finalUrl });
 
       toast({
@@ -142,14 +138,14 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       }
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           facingMode: 'user',
           width: { ideal: 640 },
           height: { ideal: 640 }
         },
         audio: false
       });
-      
+
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
@@ -173,7 +169,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     setShowCamera(false);
   };
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -182,39 +178,34 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
     if (!context) return;
 
-    // Set canvas dimensions to be square
     const size = Math.min(video.videoWidth, video.videoHeight);
     canvas.width = size;
     canvas.height = size;
 
-    // Calculate crop offsets to center the image
     const offsetX = (video.videoWidth - size) / 2;
     const offsetY = (video.videoHeight - size) / 2;
 
-    // Draw the cropped video frame to the canvas
     context.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
 
-    // Convert canvas to blob
-    canvas.toBlob(async (blob) => {
-      if (blob) {
-        const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
-        await uploadImage(file);
-        stopCamera();
-      }
-    }, 'image/jpeg', 0.8);
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.8)
+    );
+
+    if (blob) {
+      const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
+      await uploadImage(file);
+      stopCamera();
+    }
   };
 
   const handleFileSelect = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     await uploadImage(file);
-    // Clear the input value so the same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -228,9 +219,8 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           {userName.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
-      
+
       <div className="absolute bottom-0 right-0 flex space-x-1">
-        {/* Camera Button for Selfie */}
         <Dialog>
           <DialogTrigger asChild>
             <Button
@@ -245,10 +235,10 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
             <DialogHeader>
               <DialogTitle>Take a Selfie</DialogTitle>
               <DialogDescription>
-                Take a clear selfie for your profile picture. The image will be automatically cropped to a square.
+                Take a clear selfie for your profile picture.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               {showCamera && (
                 <>
@@ -259,7 +249,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
                       playsInline
                       className="w-full rounded-lg"
                     />
-                    {/* Square crop overlay */}
                     <div className="absolute inset-0 border-2 border-white border-dashed rounded-lg pointer-events-none" />
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
@@ -274,7 +263,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
                   </div>
                 </>
               )}
-              
               {!showCamera && (
                 <Button onClick={startCamera} className="w-full">
                   Start Camera
@@ -284,7 +272,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           </DialogContent>
         </Dialog>
 
-        {/* Upload Button */}
         <div>
           <input
             ref={fileInputRef}
