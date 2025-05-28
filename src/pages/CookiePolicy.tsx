@@ -15,86 +15,169 @@ const CookiePolicy = () => {
           <CardContent className="prose max-w-none p-8">
             <h2>1. What Are Cookies</h2>
             <p>
-              Cookies are small text files that are stored on your computer or mobile device when you visit a website. They allow the website to recognize your device and store some information about your preferences or past actions.
+              Cookies are small text files stored on your device when you visit AnyHire Kenya. They help us 
+              provide you with a better, more personalized experience by remembering your preferences and 
+              helping us understand how you use our platform.
             </p>
 
-            <h2>2. How We Use Cookies</h2>
-            <p>AnyHire Kenya uses cookies for several purposes:</p>
+            <h2>2. How AnyHire Kenya Uses Cookies</h2>
+            <p>We use cookies for several important purposes:</p>
             <ul>
-              <li><strong>Essential Cookies:</strong> These are necessary for the website to function properly</li>
-              <li><strong>Performance Cookies:</strong> These help us understand how visitors interact with our website</li>
-              <li><strong>Functional Cookies:</strong> These enable enhanced functionality and personalization</li>
-              <li><strong>Targeting Cookies:</strong> These may be used to deliver relevant advertisements</li>
+              <li><strong>Essential Functionality:</strong> To keep you logged in and maintain your session</li>
+              <li><strong>Security:</strong> To protect against fraud and unauthorized access</li>
+              <li><strong>Performance:</strong> To understand how users interact with our platform</li>
+              <li><strong>Personalization:</strong> To remember your preferences and settings</li>
+              <li><strong>Communication:</strong> To enable chat and messaging features</li>
             </ul>
 
             <h2>3. Types of Cookies We Use</h2>
             
-            <h3>Essential Cookies</h3>
-            <p>These cookies are strictly necessary to provide you with services available through our website:</p>
+            <h3>Essential Cookies (Always Active)</h3>
+            <p>These cookies are necessary for our platform to function properly:</p>
             <ul>
-              <li>Authentication cookies to keep you logged in</li>
-              <li>Security cookies to protect against fraud</li>
-              <li>Session cookies to maintain your preferences during your visit</li>
+              <li><strong>Authentication:</strong> Keep you logged into your account</li>
+              <li><strong>Security:</strong> Protect against cross-site request forgery and other attacks</li>
+              <li><strong>Load Balancing:</strong> Ensure optimal platform performance</li>
+              <li><strong>Form Data:</strong> Remember information you've entered in forms</li>
             </ul>
 
-            <h3>Analytics Cookies</h3>
-            <p>We use analytics cookies to:</p>
+            <h3>Performance and Analytics Cookies</h3>
+            <p>These help us understand platform usage and improve user experience:</p>
             <ul>
-              <li>Understand how visitors use our website</li>
-              <li>Improve our website performance and user experience</li>
-              <li>Generate statistical reports on website activity</li>
+              <li>Page views and popular content analysis</li>
+              <li>User journey mapping and navigation patterns</li>
+              <li>Error tracking and performance monitoring</li>
+              <li>Feature usage statistics</li>
             </ul>
 
             <h3>Functional Cookies</h3>
-            <p>These cookies enhance the functionality of our website:</p>
+            <p>These enhance your platform experience:</p>
             <ul>
-              <li>Remember your preferences and settings</li>
-              <li>Provide enhanced features like chat support</li>
-              <li>Personalize content based on your interests</li>
+              <li>Language and region preferences</li>
+              <li>Search filters and sorting preferences</li>
+              <li>Recent items viewed</li>
+              <li>Chat and communication settings</li>
+            </ul>
+
+            <h3>Marketing and Advertising Cookies</h3>
+            <p>These may be used for relevant advertising (with your consent):</p>
+            <ul>
+              <li>Interest-based advertising</li>
+              <li>Social media integration</li>
+              <li>Conversion tracking</li>
+              <li>Retargeting campaigns</li>
             </ul>
 
             <h2>4. Third-Party Cookies</h2>
-            <p>We may also use third-party cookies from:</p>
+            <p>We may use cookies from trusted third-party services:</p>
+            
+            <h3>Payment Processing</h3>
             <ul>
-              <li>Google Analytics for website analytics</li>
-              <li>Payment processors for secure transactions</li>
-              <li>Social media platforms for sharing functionality</li>
-              <li>Customer support tools for live chat</li>
+              <li><strong>Stripe:</strong> For secure payment processing</li>
+              <li><strong>PayPal:</strong> For alternative payment options</li>
+              <li><strong>M-Pesa:</strong> For mobile money transactions</li>
             </ul>
 
-            <h2>5. Managing Cookies</h2>
-            <p>You can control and manage cookies in several ways:</p>
+            <h3>Analytics and Performance</h3>
+            <ul>
+              <li><strong>Google Analytics:</strong> For understanding user behavior and platform performance</li>
+              <li><strong>Hotjar:</strong> For user experience analysis and heatmaps</li>
+            </ul>
+
+            <h3>Communication and Support</h3>
+            <ul>
+              <li><strong>Intercom:</strong> For customer support chat functionality</li>
+              <li><strong>Zendesk:</strong> For help desk and support ticket management</li>
+            </ul>
+
+            <h3>Social Media and Sharing</h3>
+            <ul>
+              <li><strong>Facebook:</strong> For social login and sharing features</li>
+              <li><strong>Google:</strong> For authentication and maps integration</li>
+              <li><strong>WhatsApp:</strong> For communication features</li>
+            </ul>
+
+            <h2>5. Managing Your Cookie Preferences</h2>
             
             <h3>Browser Settings</h3>
-            <p>Most web browsers allow you to:</p>
+            <p>You can control cookies through your browser settings:</p>
             <ul>
-              <li>View and delete cookies</li>
-              <li>Block third-party cookies</li>
-              <li>Block cookies from particular sites</li>
-              <li>Block all cookies from being set</li>
-              <li>Delete all cookies when you close the browser</li>
+              <li><strong>Chrome:</strong> Settings → Privacy and Security → Cookies and other site data</li>
+              <li><strong>Firefox:</strong> Settings → Privacy & Security → Cookies and Site Data</li>
+              <li><strong>Safari:</strong> Preferences → Privacy → Cookies and website data</li>
+              <li><strong>Edge:</strong> Settings → Cookies and site permissions</li>
             </ul>
 
-            <h3>Opting Out</h3>
-            <p>You can opt out of certain cookies:</p>
+            <h3>Platform Cookie Settings</h3>
+            <p>
+              You can manage your cookie preferences directly on AnyHire Kenya through your account settings. 
+              We provide granular controls for different types of cookies while ensuring essential functionality 
+              remains intact.
+            </p>
+
+            <h3>Opt-Out Options</h3>
+            <p>For specific services, you can opt out here:</p>
             <ul>
-              <li>Google Analytics: <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out</a></li>
-              <li>Advertising cookies: Visit the Network Advertising Initiative website</li>
+              <li><strong>Google Analytics:</strong> <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a></li>
+              <li><strong>Facebook:</strong> <a href="https://www.facebook.com/settings?tab=ads" target="_blank" rel="noopener noreferrer">Facebook Ad Preferences</a></li>
+              <li><strong>Industry Opt-out:</strong> <a href="http://www.youronlinechoices.com/" target="_blank" rel="noopener noreferrer">Your Online Choices</a></li>
             </ul>
 
-            <h2>6. Cookie Consent</h2>
+            <h2>6. Mobile Apps and Device Settings</h2>
             <p>
-              By continuing to use our website, you consent to our use of cookies as described in this policy. You can withdraw your consent at any time by adjusting your browser settings.
+              If you use our mobile app, similar tracking technologies may be used. You can control these 
+              through your device settings:
+            </p>
+            <ul>
+              <li><strong>iOS:</strong> Settings → Privacy → Tracking</li>
+              <li><strong>Android:</strong> Settings → Privacy → Ads</li>
+            </ul>
+
+            <h2>7. Cookie Consent and Withdrawal</h2>
+            <p>
+              When you first visit AnyHire Kenya, we'll ask for your consent to use non-essential cookies. 
+              You can withdraw this consent at any time through your account settings or by contacting us directly.
             </p>
 
-            <h2>7. Updates to This Policy</h2>
+            <h2>8. Data Retention</h2>
             <p>
-              We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons.
+              Different cookies have different lifespans:
+            </p>
+            <ul>
+              <li><strong>Session Cookies:</strong> Deleted when you close your browser</li>
+              <li><strong>Persistent Cookies:</strong> Remain for a set period (usually 30 days to 2 years)</li>
+              <li><strong>Essential Cookies:</strong> Retained as long as necessary for platform functionality</li>
+            </ul>
+
+            <h2>9. Impact of Disabling Cookies</h2>
+            <p>
+              While you can disable cookies, this may affect your experience on AnyHire Kenya:
+            </p>
+            <ul>
+              <li>You may need to log in more frequently</li>
+              <li>Some features may not work properly</li>
+              <li>Personalized content may not be available</li>
+              <li>We cannot remember your preferences</li>
+            </ul>
+
+            <h2>10. Updates to This Policy</h2>
+            <p>
+              We may update this Cookie Policy to reflect changes in technology, legal requirements, or our practices. 
+              We'll notify you of significant changes through email or platform notifications.
             </p>
 
-            <h2>8. Contact Us</h2>
+            <h2>11. Contact Us</h2>
             <p>
-              If you have any questions about our use of cookies, please contact us at privacy@anyhire.co.ke.
+              If you have questions about our use of cookies or this policy, please contact us at:
+            </p>
+            <ul>
+              <li>Email: privacy@anyhire.co.ke</li>
+              <li>Phone: +254 700 000 000</li>
+              <li>Address: AnyHire Limited, Nairobi, Kenya</li>
+            </ul>
+
+            <p className="mt-8 text-sm text-gray-600">
+              By continuing to use AnyHire Kenya, you consent to our use of cookies as described in this policy.
             </p>
           </CardContent>
         </Card>

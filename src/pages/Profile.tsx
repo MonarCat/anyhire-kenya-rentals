@@ -16,7 +16,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState(profile?.location || '');
 
   if (!user) {
     return (
@@ -35,16 +35,17 @@ const Profile = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    const formData = new FormData(e.currentTarget);
-    const profileData = {
-      full_name: formData.get('full_name') as string,
-      phone: formData.get('phone') as string,
-      location: selectedLocation || (formData.get('location') as string),
-      bio: formData.get('bio') as string,
-      website: formData.get('website') as string,
-    };
-
     try {
+      const formData = new FormData(e.currentTarget);
+      const profileData = {
+        full_name: formData.get('full_name') as string || '',
+        phone: formData.get('phone') as string || '',
+        location: selectedLocation || (formData.get('location') as string) || '',
+        bio: formData.get('bio') as string || '',
+        website: formData.get('website') as string || '',
+      };
+
+      console.log('Updating profile with data:', profileData);
       await updateProfile(profileData);
       setIsEditing(false);
       toast({
@@ -52,6 +53,7 @@ const Profile = () => {
         description: "Your profile has been successfully updated.",
       });
     } catch (error) {
+      console.error('Profile update error:', error);
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -63,6 +65,7 @@ const Profile = () => {
   };
 
   const handleLocationChange = (locationId: string, locationPath: string) => {
+    console.log('Location changed:', { locationId, locationPath });
     setSelectedLocation(locationPath);
   };
 
@@ -99,7 +102,7 @@ const Profile = () => {
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
-                    value={user.email}
+                    value={user.email || ''}
                     disabled
                     className="bg-gray-100"
                   />
@@ -122,6 +125,9 @@ const Profile = () => {
                     onChange={handleLocationChange}
                     required={false}
                   />
+                  {selectedLocation && (
+                    <p className="text-sm text-gray-600 mt-1">Selected: {selectedLocation}</p>
+                  )}
                 </div>
 
                 <div>

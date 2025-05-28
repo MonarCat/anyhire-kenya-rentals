@@ -14,83 +14,123 @@ const PrivacyPolicy = () => {
         <Card>
           <CardContent className="prose max-w-none p-8">
             <h2>1. Information We Collect</h2>
-            <p>We collect information you provide directly to us, such as when you:</p>
+            <p>At AnyHire Kenya, we collect information you provide directly to us when you:</p>
             <ul>
-              <li>Create an account</li>
+              <li>Create an account on our platform</li>
               <li>List an item for rent</li>
-              <li>Contact other users</li>
-              <li>Contact customer support</li>
-              <li>Participate in surveys or promotions</li>
+              <li>Browse and search for rental items</li>
+              <li>Communicate with other users through our platform</li>
+              <li>Contact our customer support team</li>
+              <li>Participate in surveys, promotions, or feedback sessions</li>
+              <li>Upload profile pictures or item images</li>
             </ul>
 
-            <h2>2. How We Use Your Information</h2>
+            <h2>2. Types of Information Collected</h2>
+            <p><strong>Personal Information:</strong></p>
+            <ul>
+              <li>Full name and contact details (email, phone number)</li>
+              <li>Location information for item listings and user profiles</li>
+              <li>Identification documents for verification purposes</li>
+              <li>Payment information processed through secure payment gateways</li>
+              <li>Profile information including bio, website, and preferences</li>
+            </ul>
+            
+            <p><strong>Technical Information:</strong></p>
+            <ul>
+              <li>Device information, IP address, and browser type</li>
+              <li>Usage patterns and platform interaction data</li>
+              <li>Cookies and similar tracking technologies</li>
+            </ul>
+
+            <h2>3. How We Use Your Information</h2>
             <p>We use the information we collect to:</p>
             <ul>
-              <li>Provide, maintain, and improve our services</li>
-              <li>Process transactions and send related information</li>
-              <li>Send technical notices and support messages</li>
-              <li>Communicate with you about products, services, and events</li>
-              <li>Monitor and analyze trends and usage</li>
-              <li>Detect, investigate, and prevent fraudulent transactions</li>
+              <li>Facilitate secure rental transactions between users</li>
+              <li>Verify user identities and prevent fraudulent activities</li>
+              <li>Provide customer support and resolve disputes</li>
+              <li>Improve our platform functionality and user experience</li>
+              <li>Send important notifications about your account and transactions</li>
+              <li>Comply with legal requirements and enforce our terms of service</li>
+              <li>Generate insights for platform optimization (anonymized data only)</li>
             </ul>
 
-            <h2>3. Information Sharing and Disclosure</h2>
-            <p>We may share information about you as follows:</p>
+            <h2>4. Information Sharing and Disclosure</h2>
+            <p>We may share information about you in the following circumstances:</p>
             <ul>
-              <li>With other users when you list items or make rental requests</li>
-              <li>With vendors, consultants, and other service providers</li>
-              <li>In response to legal requests or to prevent harm</li>
-              <li>In connection with any merger, sale of assets, or acquisition</li>
+              <li><strong>Between Users:</strong> Basic profile information is visible to facilitate rentals</li>
+              <li><strong>Service Providers:</strong> With trusted partners who help us operate our platform</li>
+              <li><strong>Legal Requirements:</strong> When required by Kenyan law or to prevent harm</li>
+              <li><strong>Business Transfers:</strong> In connection with mergers, acquisitions, or asset sales</li>
+              <li><strong>Dispute Resolution:</strong> With relevant parties when resolving rental disputes</li>
+            </ul>
+            <p>We never sell your personal information to third parties for marketing purposes.</p>
+
+            <h2>5. Data Security</h2>
+            <p>
+              We implement industry-standard security measures to protect your personal information, including:
+            </p>
+            <ul>
+              <li>Encrypted data transmission and storage</li>
+              <li>Secure payment processing through certified providers</li>
+              <li>Regular security audits and updates</li>
+              <li>Access controls and authentication requirements</li>
+              <li>Incident response procedures for potential breaches</li>
             </ul>
 
-            <h2>4. Data Security</h2>
+            <h2>6. Data Retention</h2>
             <p>
-              We take reasonable measures to help protect information about you from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction.
+              We retain your information for as long as necessary to provide our services and comply with legal obligations. 
+              Account information is retained until account deletion, while transaction records may be kept longer for 
+              legal and regulatory compliance.
             </p>
 
-            <h2>5. Data Retention</h2>
-            <p>
-              We store the information we collect about you for as long as is necessary for the purpose(s) for which we originally collected it or for other legitimate business purposes.
-            </p>
-
-            <h2>6. Your Rights</h2>
-            <p>You have the right to:</p>
+            <h2>7. Your Rights Under Kenyan Law</h2>
+            <p>In accordance with the Data Protection Act, 2019, you have the right to:</p>
             <ul>
-              <li>Access and update your personal information</li>
-              <li>Delete your account and personal data</li>
-              <li>Object to processing of your personal data</li>
+              <li>Access and review your personal data</li>
+              <li>Correct inaccurate or incomplete information</li>
+              <li>Delete your account and associated data</li>
+              <li>Object to certain processing of your data</li>
               <li>Request data portability</li>
-              <li>Withdraw consent where applicable</li>
+              <li>Lodge complaints with the Office of the Data Protection Commissioner</li>
             </ul>
 
-            <h2>7. Cookies and Similar Technologies</h2>
+            <h2>8. Cookies and Tracking Technologies</h2>
             <p>
-              We use cookies and similar technologies to provide functionality, analyze usage, and improve your experience. You can control cookies through your browser settings.
+              We use cookies and similar technologies to enhance your experience, analyze usage patterns, 
+              and maintain security. You can control cookie settings through your browser, though some 
+              features may not function properly if disabled.
             </p>
 
-            <h2>8. Third-Party Services</h2>
+            <h2>9. Third-Party Services</h2>
             <p>
-              Our platform may contain links to third-party websites or services. We are not responsible for the privacy practices of these third parties.
-            </p>
-
-            <h2>9. Children's Privacy</h2>
-            <p>
-              Our services are not intended for children under 18. We do not knowingly collect personal information from children under 18.
+              Our platform integrates with third-party services for payments, mapping, and communications. 
+              These services have their own privacy policies, and we encourage you to review them.
             </p>
 
             <h2>10. International Data Transfers</h2>
             <p>
-              Your information may be transferred to and processed in countries other than Kenya. We ensure appropriate safeguards are in place for such transfers.
+              Your information may be processed in servers located outside Kenya. We ensure appropriate 
+              safeguards are in place to protect your data during international transfers.
             </p>
 
-            <h2>11. Changes to This Policy</h2>
+            <h2>11. Updates to This Policy</h2>
             <p>
-              We may change this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page.
+              We may update this privacy policy to reflect changes in our practices or legal requirements. 
+              We will notify you of significant changes through email or platform notifications.
             </p>
 
             <h2>12. Contact Us</h2>
             <p>
-              If you have any questions about this Privacy Policy, please contact us at privacy@anyhire.co.ke.
+              For questions about this Privacy Policy or your personal data, contact us at:
+            </p>
+            <ul>
+              <li>Email: privacy@anyhire.co.ke</li>
+              <li>Phone: +254 700 000 000</li>
+              <li>Address: AnyHire Limited, Nairobi, Kenya</li>
+            </ul>
+            <p>
+              For data protection complaints, you may also contact the Office of the Data Protection Commissioner of Kenya.
             </p>
           </CardContent>
         </Card>
