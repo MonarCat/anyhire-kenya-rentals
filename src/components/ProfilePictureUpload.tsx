@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { resizeAndCompressImage, cropImageToSquare } from '@/utils/imageUtils';
 
 interface ProfilePictureUploadProps {
   currentImageUrl?: string;
@@ -52,38 +53,71 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         throw new Error('Please upload an image file');
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('File size must be less than 5MB');
+      // Validate file size (max 10MB before processing)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('File size must be less than 10MB');
       }
 
-      const fileExt = file.name.split('.').pop() || 'jpg';
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      console.log('Processing image...', { originalSize: file.size });
+
+      // Process the image: crop to square and compress
+      let processedFile = await cropImageToSquare(file);
+      processedFile = await resizeAndCompressImage(processedFile, 400, 400, 0.8);
+
+      console.log('Image processed:', { 
+        originalSize: file.size, 
+        processedSize: processedFile.size,
+        compressionRatio: ((file.size - processedFile.size) / file.size * 100).toFixed(1) + '%'
+      });
+
+      const fileExt = 'jpg'; // Always use jpg for consistency
+      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
       console.log('Uploading image to:', fileName);
 
+      // Delete old avatar if exists
+      try {
+        const { data: existingFiles } = await supabase.storage
+          .from('avatars')
+          .list(user.id);
+        
+        if (existingFiles && existingFiles.length > 0) {
+          const filesToDelete = existingFiles.map(file => `${user.id}/${file.name}`);
+          await supabase.storage
+            .from('avatars')
+            .remove(filesToDelete);
+          console.log('Removed old avatars');
+        }
+      } catch (cleanupError) {
+        console.log('No old files to clean up or cleanup failed:', cleanupError);
+      }
+
       // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { 
+        .upload(fileName, processedFile, { 
+          cacheControl: '3600',
           upsert: true,
-          contentType: file.type 
+          contentType: 'image/jpeg'
         });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        throw uploadError;
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      // Get public URL
+      console.log('Upload successful:', data);
+
+      // Get public URL with timestamp to avoid caching issues
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      console.log('Image uploaded successfully:', publicUrl);
+      const finalUrl = `${publicUrl}?t=${Date.now()}`;
+      console.log('Image uploaded successfully:', finalUrl);
 
       // Update profile with new avatar URL
-      await updateProfile({ avatar_url: publicUrl });
+      await updateProfile({ avatar_url: finalUrl });
 
       toast({
         title: "Success!",
@@ -110,8 +144,8 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'user',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 640 },
+          height: { ideal: 640 }
         },
         audio: false
       });
@@ -148,12 +182,17 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
     if (!context) return;
 
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Set canvas dimensions to be square
+    const size = Math.min(video.videoWidth, video.videoHeight);
+    canvas.width = size;
+    canvas.height = size;
 
-    // Draw the video frame to the canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Calculate crop offsets to center the image
+    const offsetX = (video.videoWidth - size) / 2;
+    const offsetY = (video.videoHeight - size) / 2;
+
+    // Draw the cropped video frame to the canvas
+    context.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
 
     // Convert canvas to blob
     canvas.toBlob(async (blob) => {
@@ -206,24 +245,28 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
             <DialogHeader>
               <DialogTitle>Take a Selfie</DialogTitle>
               <DialogDescription>
-                Take a clear selfie for your profile picture
+                Take a clear selfie for your profile picture. The image will be automatically cropped to a square.
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4">
               {showCamera && (
                 <>
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full rounded-lg"
-                  />
+                  <div className="relative">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      className="w-full rounded-lg"
+                    />
+                    {/* Square crop overlay */}
+                    <div className="absolute inset-0 border-2 border-white border-dashed rounded-lg pointer-events-none" />
+                  </div>
                   <canvas ref={canvasRef} className="hidden" />
                   <div className="flex justify-center space-x-4">
                     <Button onClick={capturePhoto} disabled={uploading}>
                       <Camera className="w-4 h-4 mr-2" />
-                      {uploading ? 'Uploading...' : 'Capture Photo'}
+                      {uploading ? 'Processing...' : 'Capture Photo'}
                     </Button>
                     <Button variant="outline" onClick={stopCamera}>
                       Cancel
