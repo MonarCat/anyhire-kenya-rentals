@@ -1193,7 +1193,7 @@ const hardcodedWards: { [key: string]: Location[] } = {
   // Bungoma - Webuye East Wards
   '3908': [
     { id: '390801', name: 'Webuye East', type: 'ward', parent_id: '3908' },
-    { id: '390802', name: 'Webuye West', type:
+    { id: '390802', name: 'Webuye West', type:'ward', parent_id: '3909' }
   ]
 };
 
