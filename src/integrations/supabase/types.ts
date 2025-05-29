@@ -9,6 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          item_id: string
+          notes: string | null
+          owner_amount: number
+          owner_id: string
+          payment_status: string | null
+          renter_id: string
+          service_fee: number
+          start_date: string
+          status: string | null
+          total_amount: number
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          item_id: string
+          notes?: string | null
+          owner_amount: number
+          owner_id: string
+          payment_status?: string | null
+          renter_id: string
+          service_fee: number
+          start_date: string
+          status?: string | null
+          total_amount: number
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          item_id?: string
+          notes?: string | null
+          owner_amount?: number
+          owner_id?: string
+          payment_status?: string | null
+          renter_id?: string
+          service_fee?: number
+          start_date?: string
+          status?: string | null
+          total_amount?: number
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -199,36 +268,6 @@ export type Database = {
         }
         Relationships: []
       }
-      Submissions: {
-        Row: {
-          contact: string | null
-          id: string
-          id_upload_path: string | null
-          kra_pin: string | null
-          other_documents_path: string | null
-          service_decription: string
-          service_type: string
-        }
-        Insert: {
-          contact?: string | null
-          id?: string
-          id_upload_path?: string | null
-          kra_pin?: string | null
-          other_documents_path?: string | null
-          service_decription: string
-          service_type: string
-        }
-        Update: {
-          contact?: string | null
-          id?: string
-          id_upload_path?: string | null
-          kra_pin?: string | null
-          other_documents_path?: string | null
-          service_decription?: string
-          service_type?: string
-        }
-        Relationships: []
-      }
       subscription_plans: {
         Row: {
           ad_type: string | null
@@ -268,6 +307,54 @@ export type Database = {
           price?: number
           sort_order?: number | null
           stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          payment_method: string | null
+          pesapal_order_id: string | null
+          pesapal_tracking_id: string | null
+          status: string | null
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          payment_method?: string | null
+          pesapal_order_id?: string | null
+          pesapal_tracking_id?: string | null
+          status?: string | null
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          payment_method?: string | null
+          pesapal_order_id?: string | null
+          pesapal_tracking_id?: string | null
+          status?: string | null
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -314,6 +401,83 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_wallets: {
+        Row: {
+          balance: number | null
+          created_at: string
+          id: string
+          total_earned: number | null
+          total_withdrawn: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string
+          id?: string
+          total_earned?: number | null
+          total_withdrawn?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string
+          id?: string
+          total_earned?: number | null
+          total_withdrawn?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          account_details: Json | null
+          admin_notes: string | null
+          amount: number
+          id: string
+          payment_method: string | null
+          processed_at: string | null
+          requested_at: string
+          status: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          account_details?: Json | null
+          admin_notes?: string | null
+          amount: number
+          id?: string
+          payment_method?: string | null
+          processed_at?: string | null
+          requested_at?: string
+          status?: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          account_details?: Json | null
+          admin_notes?: string | null
+          amount?: number
+          id?: string
+          payment_method?: string | null
+          processed_at?: string | null
+          requested_at?: string
+          status?: string | null
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "user_wallets"
             referencedColumns: ["id"]
           },
         ]
