@@ -7,13 +7,23 @@ import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import PaymentButton from '@/components/PaymentButton';
 
 const Pricing = () => {
-  const { plans, currentPlan, upgradePlan } = useSubscription();
+  const { plans, currentPlan } = useSubscription();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleUpgrade = async (planId: string) => {
+  const handlePaymentSuccess = () => {
+    toast({
+      title: "Payment Successful!",
+      description: "Your subscription has been upgraded successfully.",
+    });
+    // Refresh the page to update the subscription context
+    window.location.reload();
+  };
+
+  const handleFreeUpgrade = (planId: string) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -23,19 +33,13 @@ const Pricing = () => {
       return;
     }
 
-    try {
-      await upgradePlan(planId);
-      toast({
-        title: "Plan upgraded!",
-        description: "Your subscription has been successfully updated.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to upgrade plan. Please try again.",
-        variant: "destructive",
-      });
-    }
+    // Handle free plan upgrade locally
+    localStorage.setItem(`anyhire_plan_${user.id}`, planId);
+    toast({
+      title: "Plan upgraded!",
+      description: "Your subscription has been successfully updated.",
+    });
+    window.location.reload();
   };
 
   return (
@@ -80,15 +84,27 @@ const Pricing = () => {
                     </li>
                   ))}
                 </ul>
-                <Button 
-                  className="w-full" 
-                  variant={currentPlan.id === plan.id ? "outline" : "default"}
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={currentPlan.id === plan.id}
-                >
-                  {currentPlan.id === plan.id ? 'Current Plan' : 
-                   plan.price === 0 ? 'Get Started' : 'Upgrade'}
-                </Button>
+                
+                {currentPlan.id === plan.id ? (
+                  <Button className="w-full" variant="outline" disabled>
+                    Current Plan
+                  </Button>
+                ) : plan.price === 0 ? (
+                  <Button 
+                    className="w-full" 
+                    onClick={() => handleFreeUpgrade(plan.id)}
+                  >
+                    Get Started
+                  </Button>
+                ) : (
+                  <PaymentButton
+                    amount={plan.price}
+                    description={`${plan.name} Subscription Plan - ${plan.itemLimit === Infinity ? 'Unlimited' : plan.itemLimit} items`}
+                    paymentType="subscription"
+                    planId={plan.id}
+                    onSuccess={handlePaymentSuccess}
+                  />
+                )}
               </CardContent>
             </Card>
           ))}

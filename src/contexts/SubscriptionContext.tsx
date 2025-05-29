@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SubscriptionPlan {
   id: string;
@@ -79,25 +80,75 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     if (user) {
-      // Simulate fetching user's current plan and item count
+      fetchUserSubscription();
+      fetchUserItemCount();
+    }
+  }, [user]);
+
+  const fetchUserSubscription = async () => {
+    if (!user) return;
+
+    try {
+      // Check for active subscription in database
+      const { data: subscription } = await supabase
+        .from('user_subscriptions')
+        .select('plan_id, status')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single();
+
+      if (subscription) {
+        const plan = plans.find(p => p.id === subscription.plan_id) || plans[0];
+        setCurrentPlan(plan);
+      } else {
+        // Fallback to localStorage for basic plans
+        const storedPlan = localStorage.getItem(`anyhire_plan_${user.id}`);
+        if (storedPlan) {
+          const plan = plans.find(p => p.id === storedPlan) || plans[0];
+          setCurrentPlan(plan);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      // Fallback to localStorage
       const storedPlan = localStorage.getItem(`anyhire_plan_${user.id}`);
       if (storedPlan) {
         const plan = plans.find(p => p.id === storedPlan) || plans[0];
         setCurrentPlan(plan);
       }
-      
+    }
+  };
+
+  const fetchUserItemCount = async () => {
+    if (!user) return;
+
+    try {
+      const { count } = await supabase
+        .from('items')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      setUserItemCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching user item count:', error);
+      // Fallback to localStorage
       const storedItemCount = localStorage.getItem(`anyhire_items_${user.id}`);
       setUserItemCount(storedItemCount ? parseInt(storedItemCount) : 0);
     }
-  }, [user]);
+  };
 
   const canListMoreItems = userItemCount < currentPlan.itemLimit;
 
   const upgradePlan = async (planId: string) => {
     const newPlan = plans.find(p => p.id === planId);
     if (newPlan && user) {
-      setCurrentPlan(newPlan);
-      localStorage.setItem(`anyhire_plan_${user.id}`, planId);
+      // For free plans, update immediately
+      if (newPlan.price === 0) {
+        setCurrentPlan(newPlan);
+        localStorage.setItem(`anyhire_plan_${user.id}`, planId);
+      }
+      // For paid plans, the upgrade will be handled after successful payment
+      // through the payment callback system
     }
   };
 
