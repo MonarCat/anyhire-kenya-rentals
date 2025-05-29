@@ -1194,6 +1194,7 @@ const hardcodedWards: { [key: string]: Location[] } = {
   '3908': [
     { id: '390801', name: 'Webuye East', type: 'ward', parent_id: '3908' },
     { id: '390802', name: 'Webuye West', type:
+  ]
 };
 
 export const useLocations = () => {
