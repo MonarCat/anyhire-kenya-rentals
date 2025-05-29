@@ -35,7 +35,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const [lastName, setLastName] = useState('');
   
   const { createPayment, loading } = usePesapalPayment();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   const handlePayment = async () => {
     try {
@@ -47,7 +47,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         plan_id: planId,
         booking_id: bookingId,
         billing_address: {
-          email_address: email || profile?.email || '',
+          email_address: email || user?.email || '',
           phone_number: phoneNumber,
           country_code: 'KE',
           first_name: firstName || profile?.full_name?.split(' ')[0] || '',
