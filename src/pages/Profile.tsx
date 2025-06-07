@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -69,6 +68,23 @@ const Profile = () => {
     setSelectedLocation(locationPath);
   };
 
+  const handleImageChange = async (imageUrl: string) => {
+    try {
+      await updateProfile({ avatar_url: imageUrl });
+      toast({
+        title: "Profile picture updated!",
+        description: "Your profile picture has been successfully updated.",
+      });
+    } catch (error) {
+      console.error('Profile picture update error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile picture. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const displayName = profile?.full_name || user.email?.split('@')[0] || 'User';
 
   return (
@@ -77,8 +93,8 @@ const Profile = () => {
         <Card>
           <CardHeader className="text-center">
             <ProfilePictureUpload 
-              currentImageUrl={profile?.avatar_url} 
-              userName={displayName}
+              currentImageUrl={profile?.avatar_url || ''} 
+              onImageChange={handleImageChange}
             />
             <CardTitle className="mt-4">Profile Settings</CardTitle>
             <CardDescription>

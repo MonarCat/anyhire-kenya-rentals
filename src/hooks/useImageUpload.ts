@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -84,5 +85,71 @@ export const useImageUpload = () => {
     }
   };
 
-  return { uploadImages, uploading };
+  const uploadImage = async (file: File, folder: string = 'profile-pictures') => {
+    if (!user) return null;
+
+    setUploading(true);
+
+    try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Invalid file type');
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File too large');
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from(folder)
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(folder)
+        .getPublicUrl(fileName);
+
+      return { publicUrl };
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const deleteImage = async (imageUrl: string) => {
+    if (!imageUrl) return;
+
+    try {
+      // Extract the file path from the URL
+      const urlParts = imageUrl.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      const folder = urlParts[urlParts.length - 2];
+      const filePath = `${folder}/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('profile-pictures')
+        .remove([filePath]);
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      throw error;
+    }
+  };
+
+  return { uploadImages, uploadImage, deleteImage, uploading };
 };
