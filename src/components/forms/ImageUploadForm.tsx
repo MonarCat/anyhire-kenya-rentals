@@ -70,12 +70,12 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-600 mb-2">Upload photos of your item</p>
-        <p className="text-sm text-gray-500">JPG, PNG up to 5MB each (max 5 photos)</p>
+        <p className="text-sm text-gray-500">JPG, PNG, WEBP up to 5MB each (max 5 photos)</p>
         <Input
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           className="mt-4"
           onChange={handleImageSelection}
           disabled={selectedImages.length >= 5}

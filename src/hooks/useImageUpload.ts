@@ -27,7 +27,7 @@ export const useImageUpload = () => {
           continue;
         }
 
-        // Validate file size (max 5MB for items, 5MB for profile pictures)
+        // Validate file size (max 5MB)
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
           toast({
@@ -41,7 +41,7 @@ export const useImageUpload = () => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from(folder)
           .upload(fileName, file, {
             cacheControl: '3600',
@@ -105,7 +105,7 @@ export const useImageUpload = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from(folder)
         .upload(fileName, file, {
           cacheControl: '3600',

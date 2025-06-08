@@ -60,7 +60,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       };
       reader.readAsDataURL(file);
 
-      // Upload image
+      // Upload image using profile-pictures bucket
       const uploadResult = await uploadImage(file, 'profile-pictures');
       
       if (uploadResult?.publicUrl) {
