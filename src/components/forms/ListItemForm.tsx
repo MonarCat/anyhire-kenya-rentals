@@ -20,7 +20,6 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [selectedLocation, setSelectedLocation] = useState('');
-  const [selectedLocationId, setSelectedLocationId] = useState('');
   const [formData, setFormData] = useState<Record<string, any>>({});
   
   const { user } = useAuth();
@@ -88,10 +87,6 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         ad_type: currentPlan.adType || 'normal'
       };
 
-      if (selectedLocationId) {
-        itemData.location_id = selectedLocationId;
-      }
-
       const { data: newItem, error } = await supabase
         .from('items')
         .insert(itemData)
@@ -109,7 +104,6 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
       setFormData({});
       setSelectedImages([]);
       setSelectedLocation('');
-      setSelectedLocationId('');
 
       setTimeout(() => navigate('/dashboard'), 1000);
 
@@ -138,7 +132,6 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
       />
       <LocationForm 
         onLocationChange={(id, loc) => {
-          setSelectedLocationId(id);
           setSelectedLocation(loc);
         }} 
       />
