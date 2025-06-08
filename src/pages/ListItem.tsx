@@ -1,32 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useToast } from '@/hooks/use-toast';
-import { useImageUpload } from '@/hooks/useImageUpload';
-import { useRealtimeItems } from '@/hooks/useRealtimeItems';
 import { supabase } from '@/integrations/supabase/client';
-import BasicInformationForm from '@/components/forms/BasicInformationForm';
-import PricingForm from '@/components/forms/PricingForm';
-import LocationForm from '@/components/forms/LocationForm';
-import ImageUploadForm from '@/components/forms/ImageUploadForm';
+import ListItemForm from '@/components/forms/ListItemForm';
+import ActiveListingsSidebar from '@/components/ActiveListingsSidebar';
+import AuthGuard from '@/components/guards/AuthGuard';
+import SubscriptionGuard from '@/components/guards/SubscriptionGuard';
 
 const ListItem = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState('');
-  const [selectedLocationId, setSelectedLocationId] = useState('');
-  const [formData, setFormData] = useState<Record<string, any>>({});
   const { user } = useAuth();
-  const { canListMoreItems, currentPlan } = useSubscription();
-  const navigate = useNavigate();
+  const { canListMoreItems } = useSubscription();
   const { toast } = useToast();
-  const { uploadImages, uploading } = useImageUpload();
-  const { userItems, loading: itemsLoading } = useRealtimeItems();
 
   useEffect(() => {
     fetchCategories();
@@ -53,146 +41,12 @@ const ListItem = () => {
   };
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardHeader className="text-center">
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              Please sign in to list an item for rent
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              onClick={() => navigate('/auth')}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <AuthGuard />;
   }
 
   if (!canListMoreItems) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardHeader className="text-center">
-            <CardTitle>Listing Limit Reached</CardTitle>
-            <CardDescription>
-              You've reached your limit of {currentPlan.itemLimit} items for the {currentPlan.name} plan.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              onClick={() => navigate('/pricing')}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              Upgrade Plan
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <SubscriptionGuard />;
   }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { title, description, category, condition, price, period, minRental, address } = formData;
-
-      if (!title || !description || !category || !condition || !price || !period) {
-        toast({
-          title: "Missing Information",
-          description: "Please fill in all required fields.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (selectedImages.length === 0) {
-        toast({
-          title: "Images Required",
-          description: "Please upload at least one image of your item.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      let imageUrls: string[] = [];
-      if (selectedImages.length > 0) {
-        imageUrls = await uploadImages(selectedImages, 'items');
-        if (imageUrls.length === 0) {
-          toast({
-            title: "Upload Failed",
-            description: "Failed to upload images. Please try again.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      const itemData: any = {
-        user_id: user.id,
-        title,
-        description,
-        category_id: category,
-        condition,
-        price: parseInt(price) * 100,
-        price_period: period,
-        min_rental_period: minRental || null,
-        location: selectedLocation || 'Kenya',
-        address: address || null,
-        images: imageUrls,
-        features: [],
-        included_items: [],
-        is_available: true,
-        ad_type: currentPlan.adType || 'normal'
-      };
-
-      if (selectedLocationId) {
-        itemData.location_id = selectedLocationId;
-      }
-
-      const { data: newItem, error } = await supabase
-        .from('items')
-        .insert(itemData)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Your item has been listed successfully.",
-      });
-
-      // Reset form
-      setFormData({});
-      setSelectedImages([]);
-      setSelectedLocation('');
-      setSelectedLocationId('');
-
-      setTimeout(() => navigate('/dashboard'), 1000);
-
-    } catch (error) {
-      console.error('Error creating item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to list item. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -208,99 +62,14 @@ const ListItem = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <BasicInformationForm 
-                    categories={categories} 
-                    formData={formData} 
-                    setFormData={setFormData} 
-                  />
-                  <PricingForm 
-                    formData={formData} 
-                    setFormData={setFormData} 
-                  />
-                  <LocationForm 
-                    onLocationChange={(id, loc) => {
-                      setSelectedLocationId(id);
-                      setSelectedLocation(loc);
-                    }} 
-                  />
-                  <ImageUploadForm
-                    selectedImages={selectedImages}
-                    onImageSelection={setSelectedImages}
-                    onRemoveImage={(index) => setSelectedImages(prev => prev.filter((_, i) => i !== index))}
-                  />
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-blue-600 hover:bg-blue-700" 
-                    disabled={isLoading || uploading}
-                  >
-                    {isLoading || uploading ? 'Publishing...' : 'Publish Listing'}
-                  </Button>
-                </form>
+                <ListItemForm categories={categories} />
               </CardContent>
             </Card>
           </div>
 
           {/* Live Items Sidebar */}
           <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Your Active Listings</CardTitle>
-                <CardDescription>
-                  Real-time view of your items ({userItems.length})
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {itemsLoading ? (
-                  <div className="text-center text-gray-500">Loading...</div>
-                ) : userItems.length === 0 ? (
-                  <div className="text-center text-gray-500">
-                    No items listed yet
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {userItems.slice(0, 5).map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3 p-2 border rounded-lg">
-                        {item.images && item.images.length > 0 ? (
-                          <img 
-                            src={item.images[0]} 
-                            alt={item.title}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs">
-                            No image
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.title}</p>
-                          <p className="text-xs text-gray-500">
-                            KES {(item.price / 100).toLocaleString()}/{item.price_period}
-                          </p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className={`inline-block w-2 h-2 rounded-full ${item.is_available ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                            <span className="text-xs text-gray-500">
-                              {item.is_available ? 'Available' : 'Unavailable'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {userItems.length > 5 && (
-                      <div className="text-center">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate('/dashboard')}
-                        >
-                          View all {userItems.length} items
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ActiveListingsSidebar />
           </div>
         </div>
       </div>
