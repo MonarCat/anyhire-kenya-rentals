@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X, ImagePlus } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -21,14 +21,17 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   
   const { uploadImage, deleteImage } = useImageUpload();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>, fromCamera: boolean = false) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
+
+    console.log('File selected:', { fileName: file.name, fileSize: file.size, fromCamera });
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -82,9 +85,39 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       setPreviewUrl(null);
     } finally {
       setIsUploading(false);
+      // Reset file inputs
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleCameraCapture = () => {
+    console.log('Camera capture requested');
+    
+    // Check if device supports camera
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast({
+        title: "Camera not supported",
+        description: "Your device doesn't support camera access.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Trigger the camera input
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
+    }
+  };
+
+  const handleGalleryUpload = () => {
+    console.log('Gallery upload requested');
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -134,26 +167,52 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap justify-center">
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={handleCameraCapture}
           disabled={isUploading}
         >
-          <Upload className="w-4 h-4 mr-2" />
-          {isUploading ? 'Uploading...' : 'Upload Photo'}
+          <Camera className="w-4 h-4 mr-2" />
+          {isUploading ? 'Uploading...' : 'Take Photo'}
+        </Button>
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleGalleryUpload}
+          disabled={isUploading}
+        >
+          <ImagePlus className="w-4 h-4 mr-2" />
+          {isUploading ? 'Uploading...' : 'Choose Photo'}
         </Button>
       </div>
 
+      {/* Camera input - captures directly from camera */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="user"
+        onChange={(e) => handleFileSelect(e, true)}
+        className="hidden"
+      />
+
+      {/* Gallery input - selects from gallery */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        onChange={handleFileSelect}
+        onChange={(e) => handleFileSelect(e, false)}
         className="hidden"
       />
+
+      <p className="text-xs text-gray-500 text-center max-w-xs">
+        Take a new photo with your camera or choose an existing image from your gallery
+      </p>
     </div>
   );
 };

@@ -9,6 +9,31 @@ export const useImageUpload = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const ensureBucketExists = async (bucketName: string) => {
+    try {
+      const { data, error } = await supabase.storage.getBucket(bucketName);
+      
+      if (error && error.message.includes('not found')) {
+        console.log(`Creating bucket: ${bucketName}`);
+        const { error: createError } = await supabase.storage.createBucket(bucketName, {
+          public: true,
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          fileSizeLimit: 5242880 // 5MB
+        });
+        
+        if (createError) {
+          console.error('Error creating bucket:', createError);
+        } else {
+          console.log(`Bucket ${bucketName} created successfully`);
+        }
+      } else if (error) {
+        console.error('Error checking bucket:', error);
+      }
+    } catch (error) {
+      console.error('Error ensuring bucket exists:', error);
+    }
+  };
+
   const uploadImages = async (files: File[], folder: string = 'items'): Promise<string[]> => {
     if (!user || files.length === 0) return [];
 
@@ -16,6 +41,9 @@ export const useImageUpload = () => {
     const uploadedUrls: string[] = [];
 
     try {
+      // Ensure bucket exists
+      await ensureBucketExists(folder);
+
       for (const file of files) {
         // Validate file type
         if (!file.type.startsWith('image/')) {
@@ -92,6 +120,9 @@ export const useImageUpload = () => {
     setUploading(true);
 
     try {
+      // Ensure bucket exists
+      await ensureBucketExists(folder);
+
       // Validate file type
       if (!file.type.startsWith('image/')) {
         throw new Error('Invalid file type. Please select an image file.');
