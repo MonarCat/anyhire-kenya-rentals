@@ -85,7 +85,7 @@ export const useImageUpload = () => {
     }
   };
 
-  const uploadImage = async (file: File, folder: string = 'profile-pictures') => {
+  const uploadImage = async (file: File, folder: string = 'avatars') => {
     if (!user) return null;
 
     setUploading(true);
@@ -96,7 +96,7 @@ export const useImageUpload = () => {
         throw new Error('Invalid file type');
       }
 
-      // Validate file size (max 5MB)
+      // Validate file size (max 5MB for avatars)
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('File too large');
       }
@@ -133,13 +133,15 @@ export const useImageUpload = () => {
 
     try {
       // Extract the file path from the URL
-      const urlParts = imageUrl.split('/');
-      const fileName = urlParts[urlParts.length - 1];
-      const folder = urlParts[urlParts.length - 2];
+      const url = new URL(imageUrl);
+      const pathParts = url.pathname.split('/');
+      const bucket = pathParts[pathParts.length - 3];
+      const folder = pathParts[pathParts.length - 2];
+      const fileName = pathParts[pathParts.length - 1];
       const filePath = `${folder}/${fileName}`;
 
       const { error } = await supabase.storage
-        .from('profile-pictures')
+        .from(bucket)
         .remove([filePath]);
 
       if (error) {

@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import ProfilePictureUpload from '@/components/ProfilePictureUpload';
 import LocationSelector from '@/components/LocationSelector';
+import { profileSchema, ProfileFormData } from '@/components/forms/ProfileValidation';
 
 const Profile = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -16,6 +17,7 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(profile?.location || '');
+  const [formErrors, setFormErrors] = useState<Partial<ProfileFormData>>({});
 
   if (!user) {
     return (
@@ -30,22 +32,52 @@ const Profile = () => {
     );
   }
 
+  const validateForm = (formData: FormData) => {
+    const data = {
+      full_name: formData.get('full_name') as string || '',
+      phone: formData.get('phone') as string || '',
+      location: selectedLocation || (formData.get('location') as string) || '',
+      bio: formData.get('bio') as string || '',
+      website: formData.get('website') as string || '',
+    };
+
+    try {
+      profileSchema.parse(data);
+      setFormErrors({});
+      return data;
+    } catch (error: any) {
+      const errors: Partial<ProfileFormData> = {};
+      if (error.errors) {
+        error.errors.forEach((err: any) => {
+          if (err.path && err.path[0]) {
+            errors[err.path[0] as keyof ProfileFormData] = err.message;
+          }
+        });
+      }
+      setFormErrors(errors);
+      return null;
+    }
+  };
+
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
       const formData = new FormData(e.currentTarget);
-      const profileData = {
-        full_name: formData.get('full_name') as string || '',
-        phone: formData.get('phone') as string || '',
-        location: selectedLocation || (formData.get('location') as string) || '',
-        bio: formData.get('bio') as string || '',
-        website: formData.get('website') as string || '',
-      };
+      const validatedData = validateForm(formData);
+      
+      if (!validatedData) {
+        toast({
+          title: "Validation Error",
+          description: "Please fix the errors in the form.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      console.log('Updating profile with data:', profileData);
-      await updateProfile(profileData);
+      console.log('Updating profile with data:', validatedData);
+      await updateProfile(validatedData);
       setIsEditing(false);
       toast({
         title: "Profile updated!",
@@ -105,13 +137,17 @@ const Profile = () => {
             {isEditing ? (
               <form onSubmit={handleSave} className="space-y-6">
                 <div>
-                  <Label htmlFor="full_name">Full Name</Label>
+                  <Label htmlFor="full_name">Full Name *</Label>
                   <Input
                     id="full_name"
                     name="full_name"
                     defaultValue={profile?.full_name || ''}
                     placeholder="Enter your full name"
+                    className={formErrors.full_name ? 'border-red-500' : ''}
                   />
+                  {formErrors.full_name && (
+                    <p className="text-sm text-red-500 mt-1">{formErrors.full_name}</p>
+                  )}
                 </div>
 
                 <div>
@@ -132,17 +168,24 @@ const Profile = () => {
                     name="phone"
                     defaultValue={profile?.phone || ''}
                     placeholder="+254 700 000 000"
+                    className={formErrors.phone ? 'border-red-500' : ''}
                   />
+                  {formErrors.phone && (
+                    <p className="text-sm text-red-500 mt-1">{formErrors.phone}</p>
+                  )}
                 </div>
 
                 <div>
-                  <Label>Location</Label>
+                  <Label>Location *</Label>
                   <LocationSelector
                     onChange={handleLocationChange}
-                    required={false}
+                    required={true}
                   />
                   {selectedLocation && (
                     <p className="text-sm text-gray-600 mt-1">Selected: {selectedLocation}</p>
+                  )}
+                  {formErrors.location && (
+                    <p className="text-sm text-red-500 mt-1">{formErrors.location}</p>
                   )}
                 </div>
 
@@ -153,7 +196,11 @@ const Profile = () => {
                     name="website"
                     defaultValue={profile?.website || ''}
                     placeholder="https://yourwebsite.com"
+                    className={formErrors.website ? 'border-red-500' : ''}
                   />
+                  {formErrors.website && (
+                    <p className="text-sm text-red-500 mt-1">{formErrors.website}</p>
+                  )}
                 </div>
 
                 <div>
@@ -164,7 +211,12 @@ const Profile = () => {
                     defaultValue={profile?.bio || ''}
                     placeholder="Tell others about yourself..."
                     rows={3}
+                    className={formErrors.bio ? 'border-red-500' : ''}
                   />
+                  {formErrors.bio && (
+                    <p className="text-sm text-red-500 mt-1">{formErrors.bio}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
                 </div>
 
                 <div className="flex space-x-4">
@@ -174,7 +226,10 @@ const Profile = () => {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => {
+                      setIsEditing(false);
+                      setFormErrors({});
+                    }}
                   >
                     Cancel
                   </Button>
