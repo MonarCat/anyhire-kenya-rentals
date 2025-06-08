@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +24,7 @@ const PaymentCallback: React.FC = () => {
 
       try {
         // Check transaction status in database
-        let query = supabaseClient.from('transactions').select('*');
+        let query = supabase.from('transactions').select('*');
         
         if (transactionId) {
           query = query.eq('id', transactionId);
