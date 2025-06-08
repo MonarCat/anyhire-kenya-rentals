@@ -5,21 +5,15 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface PaymentData {
   amount: number;
-  currency: string;
+  phoneNumber: string;
   description: string;
   payment_type: 'subscription' | 'rental_payment';
   plan_id?: string;
   booking_id?: string;
-  billing_address: {
-    email_address: string;
-    phone_number: string;
-    country_code: string;
-    first_name: string;
-    last_name: string;
-  };
+  account_reference: string;
 }
 
-export const usePesapalPayment = () => {
+export const useMpesaPayment = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -31,11 +25,11 @@ export const usePesapalPayment = () => {
         throw new Error('Authentication required');
       }
 
-      const response = await supabase.functions.invoke('create-pesapal-payment', {
+      const response = await supabase.functions.invoke('create-mpesa-payment', {
         body: {
           ...paymentData,
           callback_url: `${window.location.origin}/payment-callback`,
-          notification_id: crypto.randomUUID()
+          transaction_id: crypto.randomUUID()
         },
         headers: {
           Authorization: `Bearer ${session.access_token}`
@@ -46,10 +40,11 @@ export const usePesapalPayment = () => {
         throw new Error(response.error.message);
       }
 
-      // Redirect to Pesapal payment page
-      if (response.data?.redirect_url) {
-        window.location.href = response.data.redirect_url;
-      }
+      // M-Pesa payment initiated, show success message
+      toast({
+        title: "Payment Initiated",
+        description: "Please check your phone for the M-Pesa payment prompt",
+      });
 
       return response.data;
     } catch (error) {

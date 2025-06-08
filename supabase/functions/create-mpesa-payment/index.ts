@@ -9,20 +9,14 @@ const corsHeaders = {
 
 interface PaymentRequest {
   amount: number
-  currency: string
+  phoneNumber: string
   description: string
   callback_url: string
-  notification_id: string
-  billing_address: {
-    email_address: string
-    phone_number: string
-    country_code: string
-    first_name: string
-    last_name: string
-  }
+  transaction_id: string
   payment_type: 'subscription' | 'rental_payment'
   plan_id?: string
   booking_id?: string
+  account_reference: string
 }
 
 serve(async (req) => {
@@ -46,61 +40,73 @@ serve(async (req) => {
 
     const body: PaymentRequest = await req.json()
 
-    // Get Pesapal credentials
-    const pesapalConsumerKey = Deno.env.get('PESAPAL_CONSUMER_KEY')
-    const pesapalConsumerSecret = Deno.env.get('PESAPAL_CONSUMER_SECRET')
-    const pesapalEnvironment = Deno.env.get('PESAPAL_ENVIRONMENT') || 'sandbox'
+    // Get M-Pesa credentials
+    const consumerKey = Deno.env.get('MPESA_CONSUMER_KEY')
+    const consumerSecret = Deno.env.get('MPESA_CONSUMER_SECRET')
+    const environment = Deno.env.get('MPESA_ENVIRONMENT') || 'sandbox'
+    const shortcode = Deno.env.get('MPESA_SHORTCODE')
+    const passkey = Deno.env.get('MPESA_PASSKEY')
 
-    if (!pesapalConsumerKey || !pesapalConsumerSecret) {
-      throw new Error('Pesapal credentials not configured')
+    if (!consumerKey || !consumerSecret || !shortcode || !passkey) {
+      throw new Error('M-Pesa credentials not configured')
     }
 
-    const baseUrl = pesapalEnvironment === 'sandbox' 
-      ? 'https://cybqa.pesapal.com/pesapalv3'
-      : 'https://pay.pesapal.com/v3'
+    const baseUrl = environment === 'sandbox' 
+      ? 'https://sandbox.safaricom.co.ke'
+      : 'https://api.safaricom.co.ke'
 
-    // Get access token
-    const authResponse = await fetch(`${baseUrl}/api/Auth/RequestToken`, {
-      method: 'POST',
+    // Generate access token
+    const auth = btoa(`${consumerKey}:${consumerSecret}`)
+    const tokenResponse = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        consumer_key: pesapalConsumerKey,
-        consumer_secret: pesapalConsumerSecret
-      })
+        'Authorization': `Basic ${auth}`
+      }
     })
 
-    const authData = await authResponse.json()
-    const accessToken = authData.token
-
-    // Prepare order data
-    const orderData = {
-      id: crypto.randomUUID(),
-      currency: body.currency,
-      amount: body.amount / 100, // Convert from cents to KES
-      description: body.description,
-      callback_url: body.callback_url,
-      notification_id: body.notification_id,
-      billing_address: body.billing_address
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to get M-Pesa access token')
     }
 
-    // Submit order to Pesapal
-    const orderResponse = await fetch(`${baseUrl}/api/Transactions/SubmitOrderRequest`, {
+    const tokenData = await tokenResponse.json()
+    const accessToken = tokenData.access_token
+
+    // Generate timestamp and password
+    const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14)
+    const password = btoa(`${shortcode}${passkey}${timestamp}`)
+
+    // Format phone number
+    const formattedPhone = body.phoneNumber.startsWith('254') 
+      ? body.phoneNumber 
+      : `254${body.phoneNumber.replace(/^0/, '')}`
+
+    // Initiate STK push
+    const stkData = {
+      BusinessShortCode: shortcode,
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: "CustomerPayBillOnline",
+      Amount: body.amount,
+      PartyA: formattedPhone,
+      PartyB: shortcode,
+      PhoneNumber: formattedPhone,
+      CallBackURL: `${Deno.env.get('SUPABASE_URL')}/functions/v1/mpesa-callback`,
+      AccountReference: body.account_reference,
+      TransactionDesc: body.description
+    }
+
+    const stkResponse = await fetch(`${baseUrl}/mpesa/stkpush/v1/processrequest`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(orderData)
+      body: JSON.stringify(stkData)
     })
 
-    const orderResult = await orderResponse.json()
+    const stkResult = await stkResponse.json()
 
-    if (!orderResponse.ok) {
-      throw new Error(`Pesapal order creation failed: ${orderResult.error_message || 'Unknown error'}`)
+    if (stkResult.ResponseCode !== '0') {
+      throw new Error(stkResult.ResponseDescription || 'Failed to initiate M-Pesa payment')
     }
 
     // Create transaction record
@@ -110,10 +116,10 @@ serve(async (req) => {
         user_id: user.id,
         transaction_type: body.payment_type,
         amount: body.amount,
-        currency: body.currency,
+        currency: 'KES',
         status: 'pending',
-        pesapal_tracking_id: orderResult.order_tracking_id,
-        pesapal_order_id: orderData.id,
+        mpesa_checkout_request_id: stkResult.CheckoutRequestID,
+        mpesa_merchant_request_id: stkResult.MerchantRequestID,
         description: body.description,
         booking_id: body.booking_id || null
       })
@@ -141,8 +147,9 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        redirect_url: orderResult.redirect_url,
-        order_tracking_id: orderResult.order_tracking_id,
+        success: true,
+        message: 'Payment initiated successfully',
+        checkout_request_id: stkResult.CheckoutRequestID,
         transaction_id: transaction.id
       }),
       {
@@ -152,7 +159,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error creating Pesapal payment:', error)
+    console.error('Error creating M-Pesa payment:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const PaymentCallback: React.FC = () => {
@@ -14,10 +14,10 @@ const PaymentCallback: React.FC = () => {
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
-      const orderTrackingId = searchParams.get('OrderTrackingId');
-      const orderMerchantReference = searchParams.get('OrderMerchantReference');
+      const transactionId = searchParams.get('transaction_id');
+      const checkoutRequestId = searchParams.get('checkout_request_id');
 
-      if (!orderTrackingId) {
+      if (!transactionId && !checkoutRequestId) {
         setPaymentStatus('failed');
         setMessage('Invalid payment reference');
         return;
@@ -25,11 +25,15 @@ const PaymentCallback: React.FC = () => {
 
       try {
         // Check transaction status in database
-        const { data: transaction, error } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('pesapal_tracking_id', orderTrackingId)
-          .single();
+        let query = supabaseClient.from('transactions').select('*');
+        
+        if (transactionId) {
+          query = query.eq('id', transactionId);
+        } else if (checkoutRequestId) {
+          query = query.eq('mpesa_checkout_request_id', checkoutRequestId);
+        }
+
+        const { data: transaction, error } = await query.single();
 
         if (error || !transaction) {
           setPaymentStatus('failed');
@@ -40,16 +44,16 @@ const PaymentCallback: React.FC = () => {
         // Check current status
         if (transaction.status === 'completed') {
           setPaymentStatus('success');
-          setMessage('Payment completed successfully!');
+          setMessage('M-Pesa payment completed successfully!');
         } else if (transaction.status === 'failed') {
           setPaymentStatus('failed');
-          setMessage('Payment failed. Please try again.');
+          setMessage('M-Pesa payment failed. Please try again.');
         } else if (transaction.status === 'cancelled') {
           setPaymentStatus('failed');
-          setMessage('Payment was cancelled.');
+          setMessage('M-Pesa payment was cancelled.');
         } else {
           setPaymentStatus('pending');
-          setMessage('Payment is being processed. Please wait...');
+          setMessage('M-Pesa payment is being processed. Please complete the payment on your phone.');
           
           // Poll for status updates
           const pollInterval = setInterval(async () => {
@@ -61,11 +65,11 @@ const PaymentCallback: React.FC = () => {
 
             if (updatedTransaction?.status === 'completed') {
               setPaymentStatus('success');
-              setMessage('Payment completed successfully!');
+              setMessage('M-Pesa payment completed successfully!');
               clearInterval(pollInterval);
             } else if (updatedTransaction?.status === 'failed' || updatedTransaction?.status === 'cancelled') {
               setPaymentStatus('failed');
-              setMessage('Payment failed. Please try again.');
+              setMessage('M-Pesa payment failed. Please try again.');
               clearInterval(pollInterval);
             }
           }, 3000);
@@ -75,7 +79,7 @@ const PaymentCallback: React.FC = () => {
             clearInterval(pollInterval);
             if (paymentStatus === 'pending') {
               setPaymentStatus('pending');
-              setMessage('Payment is still being processed. You will receive a confirmation shortly.');
+              setMessage('M-Pesa payment is still being processed. You will receive a confirmation shortly.');
             }
           }, 300000);
         }
@@ -96,7 +100,7 @@ const PaymentCallback: React.FC = () => {
       case 'failed':
         return <XCircle className="w-16 h-16 text-red-500" />;
       case 'pending':
-        return <Clock className="w-16 h-16 text-yellow-500" />;
+        return <Smartphone className="w-16 h-16 text-green-500 animate-pulse" />;
       default:
         return <Clock className="w-16 h-16 text-gray-400 animate-spin" />;
     }
@@ -105,13 +109,13 @@ const PaymentCallback: React.FC = () => {
   const getStatusTitle = () => {
     switch (paymentStatus) {
       case 'success':
-        return 'Payment Successful!';
+        return 'M-Pesa Payment Successful!';
       case 'failed':
-        return 'Payment Failed';
+        return 'M-Pesa Payment Failed';
       case 'pending':
-        return 'Payment Pending';
+        return 'Complete M-Pesa Payment';
       default:
-        return 'Processing Payment...';
+        return 'Processing M-Pesa Payment...';
     }
   };
 
@@ -122,7 +126,7 @@ const PaymentCallback: React.FC = () => {
       case 'failed':
         return 'text-red-600';
       case 'pending':
-        return 'text-yellow-600';
+        return 'text-green-600';
       default:
         return 'text-gray-600';
     }
@@ -143,6 +147,17 @@ const PaymentCallback: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {paymentStatus === 'pending' && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <Smartphone className="w-5 h-5 text-green-600 mr-2" />
+                <span className="text-sm font-medium text-green-800">
+                  Check your phone for M-Pesa payment prompt
+                </span>
+              </div>
+            </div>
+          )}
+          
           {paymentStatus === 'success' && (
             <div className="space-y-3">
               <Button 
@@ -165,7 +180,7 @@ const PaymentCallback: React.FC = () => {
             <div className="space-y-3">
               <Button 
                 onClick={() => navigate('/pricing')} 
-                className="w-full"
+                className="w-full bg-green-600 hover:bg-green-700"
               >
                 Try Again
               </Button>
@@ -183,6 +198,7 @@ const PaymentCallback: React.FC = () => {
             <div className="space-y-3">
               <Button 
                 onClick={() => navigate('/dashboard')} 
+                variant="outline"
                 className="w-full"
               >
                 Go to Dashboard
@@ -199,7 +215,7 @@ const PaymentCallback: React.FC = () => {
           
           {paymentStatus === 'loading' && (
             <div className="text-center text-gray-500">
-              Checking payment status...
+              Checking M-Pesa payment status...
             </div>
           )}
         </CardContent>

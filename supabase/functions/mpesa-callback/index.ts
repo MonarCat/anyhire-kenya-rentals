@@ -19,68 +19,45 @@ serve(async (req) => {
     )
 
     const body = await req.json()
-    const orderTrackingId = body.OrderTrackingId
+    console.log('M-Pesa callback received:', JSON.stringify(body, null, 2))
 
-    if (!orderTrackingId) {
-      throw new Error('Missing OrderTrackingId')
+    const stkCallback = body.Body?.stkCallback
+    if (!stkCallback) {
+      throw new Error('Invalid callback format')
     }
 
-    // Get Pesapal credentials
-    const pesapalConsumerKey = Deno.env.get('PESAPAL_CONSUMER_KEY')
-    const pesapalConsumerSecret = Deno.env.get('PESAPAL_CONSUMER_SECRET')
-    const pesapalEnvironment = Deno.env.get('PESAPAL_ENVIRONMENT') || 'sandbox'
+    const checkoutRequestId = stkCallback.CheckoutRequestID
+    const resultCode = stkCallback.ResultCode
 
-    const baseUrl = pesapalEnvironment === 'sandbox' 
-      ? 'https://cybqa.pesapal.com/pesapalv3'
-      : 'https://pay.pesapal.com/v3'
+    if (!checkoutRequestId) {
+      throw new Error('Missing CheckoutRequestID')
+    }
 
-    // Get access token
-    const authResponse = await fetch(`${baseUrl}/api/Auth/RequestToken`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        consumer_key: pesapalConsumerKey,
-        consumer_secret: pesapalConsumerSecret
-      })
-    })
-
-    const authData = await authResponse.json()
-    const accessToken = authData.token
-
-    // Get transaction status from Pesapal
-    const statusResponse = await fetch(
-      `${baseUrl}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        }
-      }
-    )
-
-    const statusData = await statusResponse.json()
-
-    // Update transaction in database
+    // Find transaction by checkout request ID
     const { data: transaction, error: findError } = await supabaseClient
       .from('transactions')
       .select('*')
-      .eq('pesapal_tracking_id', orderTrackingId)
+      .eq('mpesa_checkout_request_id', checkoutRequestId)
       .single()
 
     if (findError || !transaction) {
-      throw new Error(`Transaction not found for tracking ID: ${orderTrackingId}`)
+      throw new Error(`Transaction not found for checkout request ID: ${checkoutRequestId}`)
     }
 
     let newStatus = 'pending'
-    if (statusData.payment_status_description === 'Completed') {
+    let mpesaReceiptNumber = null
+
+    if (resultCode === 0) {
+      // Payment successful
       newStatus = 'completed'
-    } else if (statusData.payment_status_description === 'Failed') {
+      
+      // Extract M-Pesa receipt number
+      const callbackMetadata = stkCallback.CallbackMetadata?.Item || []
+      const receiptItem = callbackMetadata.find((item: any) => item.Name === 'MpesaReceiptNumber')
+      mpesaReceiptNumber = receiptItem?.Value || null
+    } else {
+      // Payment failed or cancelled
       newStatus = 'failed'
-    } else if (statusData.payment_status_description === 'Cancelled') {
-      newStatus = 'cancelled'
     }
 
     // Update transaction status
@@ -88,7 +65,8 @@ serve(async (req) => {
       .from('transactions')
       .update({
         status: newStatus,
-        payment_method: statusData.payment_method,
+        mpesa_receipt_number: mpesaReceiptNumber,
+        payment_method: 'mpesa',
         updated_at: new Date().toISOString()
       })
       .eq('id', transaction.id)
@@ -141,7 +119,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Pesapal webhook error:', error)
+    console.error('M-Pesa callback error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
