@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Upload, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -21,10 +22,10 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
     const files = Array.from(event.target.files || []);
     
     // Validate number of files
-    if (files.length > 5) {
+    if (selectedImages.length + files.length > 5) {
       toast({
         title: "Too many images",
-        description: "Please select maximum 5 images.",
+        description: "Please select maximum 5 images total.",
         variant: "destructive",
       });
       return;
@@ -41,10 +42,10 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
         return false;
       }
       
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast({
           title: "File too large",
-          description: `${file.name} exceeds 10MB limit.`,
+          description: `${file.name} exceeds 5MB limit.`,
           variant: "destructive",
         });
         return false;
@@ -54,7 +55,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
     });
 
     if (validFiles.length > 0) {
-      onImageSelection(validFiles);
+      onImageSelection([...selectedImages, ...validFiles]);
       // Reset input value to allow selecting the same file again
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -64,12 +65,12 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Photos</h3>
+      <h3 className="text-lg font-semibold">Photos ({selectedImages.length}/5)</h3>
       
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-600 mb-2">Upload photos of your item</p>
-        <p className="text-sm text-gray-500">JPG, PNG up to 10MB each (max 5 photos)</p>
+        <p className="text-sm text-gray-500">JPG, PNG up to 5MB each (max 5 photos)</p>
         <Input
           ref={fileInputRef}
           type="file"
@@ -77,6 +78,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
           accept="image/*"
           className="mt-4"
           onChange={handleImageSelection}
+          disabled={selectedImages.length >= 5}
         />
       </div>
 
@@ -92,10 +94,13 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
               <button
                 type="button"
                 onClick={() => onRemoveImage(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
               >
                 <X className="w-4 h-4" />
               </button>
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg">
+                {(file.size / (1024 * 1024)).toFixed(1)}MB
+              </div>
             </div>
           ))}
         </div>

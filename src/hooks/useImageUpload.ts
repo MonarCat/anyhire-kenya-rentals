@@ -27,11 +27,12 @@ export const useImageUpload = () => {
           continue;
         }
 
-        // Validate file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
+        // Validate file size (max 5MB for items, 5MB for profile pictures)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
           toast({
             title: "File too large",
-            description: `${file.name} is larger than 10MB.`,
+            description: `${file.name} must be smaller than 5MB.`,
             variant: "destructive",
           });
           continue;
@@ -51,7 +52,7 @@ export const useImageUpload = () => {
           console.error('Upload error:', uploadError);
           toast({
             title: "Upload failed",
-            description: `Failed to upload ${file.name}`,
+            description: `Failed to upload ${file.name}: ${uploadError.message}`,
             variant: "destructive",
           });
           continue;
@@ -85,7 +86,7 @@ export const useImageUpload = () => {
     }
   };
 
-  const uploadImage = async (file: File, folder: string = 'avatars') => {
+  const uploadImage = async (file: File, folder: string = 'profile-pictures') => {
     if (!user) return null;
 
     setUploading(true);
@@ -93,12 +94,12 @@ export const useImageUpload = () => {
     try {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        throw new Error('Invalid file type');
+        throw new Error('Invalid file type. Please select an image file.');
       }
 
-      // Validate file size (max 5MB for avatars)
+      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        throw new Error('File too large');
+        throw new Error('File too large. Please select an image smaller than 5MB.');
       }
 
       const fileExt = file.name.split('.').pop();
@@ -112,7 +113,7 @@ export const useImageUpload = () => {
         });
 
       if (uploadError) {
-        throw uploadError;
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
       const { data: { publicUrl } } = supabase.storage

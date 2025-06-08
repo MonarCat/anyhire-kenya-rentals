@@ -1,4 +1,4 @@
-// Updated ListItem.tsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useToast } from '@/hooks/use-toast';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useRealtimeItems } from '@/hooks/useRealtimeItems';
 import { supabase } from '@/integrations/supabase/client';
 import BasicInformationForm from '@/components/forms/BasicInformationForm';
 import PricingForm from '@/components/forms/PricingForm';
@@ -25,6 +26,7 @@ const ListItem = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { uploadImages, uploading } = useImageUpload();
+  const { userItems, loading: itemsLoading } = useRealtimeItems();
 
   useEffect(() => {
     fetchCategories();
@@ -42,6 +44,11 @@ const ListItem = () => {
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load categories. Please refresh the page.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -108,9 +115,28 @@ const ListItem = () => {
         return;
       }
 
+      if (selectedImages.length === 0) {
+        toast({
+          title: "Images Required",
+          description: "Please upload at least one image of your item.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       let imageUrls: string[] = [];
       if (selectedImages.length > 0) {
         imageUrls = await uploadImages(selectedImages, 'items');
+        if (imageUrls.length === 0) {
+          toast({
+            title: "Upload Failed",
+            description: "Failed to upload images. Please try again.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
       }
 
       const itemData: any = {
@@ -148,6 +174,12 @@ const ListItem = () => {
         description: "Your item has been listed successfully.",
       });
 
+      // Reset form
+      setFormData({});
+      setSelectedImages([]);
+      setSelectedLocation('');
+      setSelectedLocationId('');
+
       setTimeout(() => navigate('/dashboard'), 1000);
 
     } catch (error) {
@@ -164,33 +196,113 @@ const ListItem = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">List Your Item</CardTitle>
-            <CardDescription>
-              Create a listing to rent out your item and start earning
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <BasicInformationForm categories={categories} formData={formData} setFormData={setFormData} />
-              <PricingForm formData={formData} setFormData={setFormData} />
-              <LocationForm onLocationChange={(id, loc) => {
-                setSelectedLocationId(id);
-                setSelectedLocation(loc);
-              }} />
-              <ImageUploadForm
-                selectedImages={selectedImages}
-                onImageSelection={setSelectedImages}
-                onRemoveImage={(index) => setSelectedImages(prev => prev.filter((_, i) => i !== index))}
-              />
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading || uploading}>
-                {isLoading || uploading ? 'Publishing...' : 'Publish Listing'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">List Your Item</CardTitle>
+                <CardDescription>
+                  Create a listing to rent out your item and start earning
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <BasicInformationForm 
+                    categories={categories} 
+                    formData={formData} 
+                    setFormData={setFormData} 
+                  />
+                  <PricingForm 
+                    formData={formData} 
+                    setFormData={setFormData} 
+                  />
+                  <LocationForm 
+                    onLocationChange={(id, loc) => {
+                      setSelectedLocationId(id);
+                      setSelectedLocation(loc);
+                    }} 
+                  />
+                  <ImageUploadForm
+                    selectedImages={selectedImages}
+                    onImageSelection={setSelectedImages}
+                    onRemoveImage={(index) => setSelectedImages(prev => prev.filter((_, i) => i !== index))}
+                  />
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-blue-600 hover:bg-blue-700" 
+                    disabled={isLoading || uploading}
+                  >
+                    {isLoading || uploading ? 'Publishing...' : 'Publish Listing'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Live Items Sidebar */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Your Active Listings</CardTitle>
+                <CardDescription>
+                  Real-time view of your items ({userItems.length})
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {itemsLoading ? (
+                  <div className="text-center text-gray-500">Loading...</div>
+                ) : userItems.length === 0 ? (
+                  <div className="text-center text-gray-500">
+                    No items listed yet
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {userItems.slice(0, 5).map((item) => (
+                      <div key={item.id} className="flex items-center space-x-3 p-2 border rounded-lg">
+                        {item.images && item.images.length > 0 ? (
+                          <img 
+                            src={item.images[0]} 
+                            alt={item.title}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs">
+                            No image
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{item.title}</p>
+                          <p className="text-xs text-gray-500">
+                            KES {(item.price / 100).toLocaleString()}/{item.price_period}
+                          </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`inline-block w-2 h-2 rounded-full ${item.is_available ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                            <span className="text-xs text-gray-500">
+                              {item.is_available ? 'Available' : 'Unavailable'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {userItems.length > 5 && (
+                      <div className="text-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate('/dashboard')}
+                        >
+                          View all {userItems.length} items
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
