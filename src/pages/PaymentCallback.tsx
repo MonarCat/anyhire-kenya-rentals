@@ -24,21 +24,22 @@ const PaymentCallback: React.FC = () => {
 
       try {
         // Check transaction status in database
-        let query = supabase.from('transactions').select('*');
-        
-        if (transactionId) {
-          query = query.eq('id', transactionId);
-        } else if (checkoutRequestId) {
-          query = query.eq('mpesa_checkout_request_id', checkoutRequestId);
-        }
+        const { data: transactions, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .or(
+            transactionId 
+              ? `id.eq.${transactionId}` 
+              : `mpesa_checkout_request_id.eq.${checkoutRequestId}`
+          );
 
-        const { data: transaction, error } = await query.single();
-
-        if (error || !transaction) {
+        if (error || !transactions || transactions.length === 0) {
           setPaymentStatus('failed');
           setMessage('Transaction not found');
           return;
         }
+
+        const transaction = transactions[0];
 
         // Check current status
         if (transaction.status === 'completed') {
@@ -56,11 +57,12 @@ const PaymentCallback: React.FC = () => {
           
           // Poll for status updates
           const pollInterval = setInterval(async () => {
-            const { data: updatedTransaction } = await supabase
+            const { data: updatedTransactions } = await supabase
               .from('transactions')
               .select('status')
-              .eq('id', transaction.id)
-              .single();
+              .eq('id', transaction.id);
+
+            const updatedTransaction = updatedTransactions?.[0];
 
             if (updatedTransaction?.status === 'completed') {
               setPaymentStatus('success');

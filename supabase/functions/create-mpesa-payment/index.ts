@@ -109,7 +109,7 @@ serve(async (req) => {
       throw new Error(stkResult.ResponseDescription || 'Failed to initiate M-Pesa payment')
     }
 
-    // Create transaction record
+    // Create transaction record with M-Pesa specific fields
     const { data: transaction, error: transactionError } = await supabaseClient
       .from('transactions')
       .insert({
