@@ -94,6 +94,7 @@ const PaymentCallback: React.FC = () => {
     checkPaymentStatus();
   }, [searchParams]);
 
+  
   const getStatusIcon = () => {
     switch (paymentStatus) {
       case 'success':
