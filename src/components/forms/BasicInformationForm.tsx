@@ -1,4 +1,4 @@
-// Updated BasicInformationForm.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -21,24 +21,31 @@ interface BasicInformationFormProps {
 
 const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories: propCategories, formData, setFormData }) => {
   const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (propCategories && propCategories.length > 0) {
+      setCategories(propCategories);
+      setError(null);
+    } else {
+      fetchCategories();
+    }
+  }, [propCategories]);
 
   const fetchCategories = async () => {
+    if (propCategories && propCategories.length > 0) {
+      setCategories(propCategories);
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    
     try {
-      if (propCategories && propCategories.length > 0) {
-        setCategories(propCategories);
-        setLoading(false);
-        return;
-      }
-
+      console.log('BasicInformationForm: Fetching categories...');
+      
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, icon')
@@ -46,14 +53,38 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
         .order('sort_order', { ascending: true })
         .order('name', { ascending: true });
 
-      if (error) throw error;
-      setCategories(data || []);
+      if (error) {
+        console.error('BasicInformationForm: Supabase error:', error);
+        throw error;
+      }
+
+      console.log('BasicInformationForm: Categories fetched:', data);
+      
+      if (data && data.length > 0) {
+        setCategories(data);
+      } else {
+        // Use fallback categories
+        console.log('BasicInformationForm: Using fallback categories');
+        setCategories([
+          { id: 'electronics', name: 'Electronics', icon: '📱' },
+          { id: 'tools', name: 'Tools & Equipment', icon: '🔧' },
+          { id: 'books', name: 'Books & Media', icon: '📚' },
+          { id: 'sports', name: 'Sports & Recreation', icon: '⚽' },
+          { id: 'furniture', name: 'Furniture', icon: '🪑' },
+          { id: 'other', name: 'Other', icon: '📦' },
+        ]);
+      }
     } catch (error) {
-      setError('Using default categories (connection error)');
+      console.error('BasicInformationForm: Error fetching categories:', error);
+      setError('Connection error - using default categories');
+      
+      // Always provide fallback categories
       setCategories([
         { id: 'electronics', name: 'Electronics', icon: '📱' },
         { id: 'tools', name: 'Tools & Equipment', icon: '🔧' },
         { id: 'books', name: 'Books & Media', icon: '📚' },
+        { id: 'sports', name: 'Sports & Recreation', icon: '⚽' },
+        { id: 'furniture', name: 'Furniture', icon: '🪑' },
         { id: 'other', name: 'Other', icon: '📦' },
       ]);
     } finally {
@@ -105,7 +136,10 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
             <SelectContent className="max-h-[300px] overflow-y-auto">
               {loading ? (
                 <SelectItem value="loading" disabled>
-                  Loading categories...
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Loading categories...
+                  </div>
                 </SelectItem>
               ) : categories.length === 0 ? (
                 <SelectItem value="no-categories" disabled>
