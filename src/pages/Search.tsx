@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import SearchFilters from '@/components/SearchFilters';
+import { useCategories } from '@/hooks/useCategories';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,9 +19,9 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [showFilters, setShowFilters] = useState(false);
   const [items, setItems] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { categories } = useCategories();
 
   const [filters, setFilters] = useState({
     location: searchParams.get('location') || 'All Locations',
@@ -31,27 +32,8 @@ const Search = () => {
   });
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
     fetchItems();
   }, [filters, searchQuery]);
-
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
 
   const fetchItems = async () => {
     setLoading(true);
@@ -229,8 +211,8 @@ const Search = () => {
 
         {/* Results Grid */}
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Loading items...</p>
+          <div className="flex justify-center py-12">
+            <LoadingSpinner size="lg" text="Loading items..." />
           </div>
         ) : (
           <div className={`grid gap-6 ${

@@ -1,41 +1,24 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useCategories } from '@/hooks/useCategories';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const CategoryGrid = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { categories, loading } = useCategories();
 
   if (loading) {
-    return <div>Loading categories...</div>;
+    return (
+      <div className="flex justify-center py-8">
+        <LoadingSpinner size="lg" text="Loading categories..." />
+      </div>
+    );
   }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-      {categories.map((category: any) => (
+      {categories.map((category) => (
         <Link key={category.id} to={`/search?category=${encodeURIComponent(category.name)}`}>
           <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
             <CardContent className="p-0">

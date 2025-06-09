@@ -1,13 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface BasicInformationFormProps {
   categories: {
@@ -19,79 +15,11 @@ interface BasicInformationFormProps {
   setFormData: (data: Record<string, any>) => void;
 }
 
-const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories: propCategories, formData, setFormData }) => {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (propCategories && propCategories.length > 0) {
-      setCategories(propCategories);
-      setError(null);
-    } else {
-      fetchCategories();
-    }
-  }, [propCategories]);
-
-  const fetchCategories = async () => {
-    if (propCategories && propCategories.length > 0) {
-      setCategories(propCategories);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      console.log('BasicInformationForm: Fetching categories...');
-      
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, icon')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true })
-        .order('name', { ascending: true });
-
-      if (error) {
-        console.error('BasicInformationForm: Supabase error:', error);
-        throw error;
-      }
-
-      console.log('BasicInformationForm: Categories fetched:', data);
-      
-      if (data && data.length > 0) {
-        setCategories(data);
-      } else {
-        // Use fallback categories
-        console.log('BasicInformationForm: Using fallback categories');
-        setCategories([
-          { id: 'electronics', name: 'Electronics', icon: '📱' },
-          { id: 'tools', name: 'Tools & Equipment', icon: '🔧' },
-          { id: 'books', name: 'Books & Media', icon: '📚' },
-          { id: 'sports', name: 'Sports & Recreation', icon: '⚽' },
-          { id: 'furniture', name: 'Furniture', icon: '🪑' },
-          { id: 'other', name: 'Other', icon: '📦' },
-        ]);
-      }
-    } catch (error) {
-      console.error('BasicInformationForm: Error fetching categories:', error);
-      setError('Connection error - using default categories');
-      
-      // Always provide fallback categories
-      setCategories([
-        { id: 'electronics', name: 'Electronics', icon: '📱' },
-        { id: 'tools', name: 'Tools & Equipment', icon: '🔧' },
-        { id: 'books', name: 'Books & Media', icon: '📚' },
-        { id: 'sports', name: 'Sports & Recreation', icon: '⚽' },
-        { id: 'furniture', name: 'Furniture', icon: '🪑' },
-        { id: 'other', name: 'Other', icon: '📦' },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ 
+  categories, 
+  formData, 
+  setFormData 
+}) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -131,17 +59,10 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
             onValueChange={(value) => setFormData({ ...formData, category: value })}
           >
             <SelectTrigger id="category">
-              <SelectValue placeholder={loading ? 'Loading categories...' : 'Select category'} />
+              <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent className="max-h-[300px] overflow-y-auto">
-              {loading ? (
-                <SelectItem value="loading" disabled>
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="h-3 w-3 animate-spin" />
-                    Loading categories...
-                  </div>
-                </SelectItem>
-              ) : categories.length === 0 ? (
+              {categories.length === 0 ? (
                 <SelectItem value="no-categories" disabled>
                   No categories available
                 </SelectItem>
@@ -157,20 +78,6 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ categories:
               )}
             </SelectContent>
           </Select>
-          {error && (
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-orange-600">{error}</p>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={fetchCategories}
-                className="h-6 w-6 p-0"
-              >
-                <RefreshCw className="h-3 w-3" />
-              </Button>
-            </div>
-          )}
         </div>
 
         <div>
