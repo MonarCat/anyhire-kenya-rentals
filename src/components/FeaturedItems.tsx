@@ -60,10 +60,14 @@ const FeaturedItems = () => {
       console.log('Featured items fetched successfully:', data);
       
       // Transform the data to ensure images is always an array of strings
-      const transformedData = (data || []).map(item => ({
+      const transformedData: Item[] = (data || []).map(item => ({
         ...item,
-        images: Array.isArray(item.images) ? item.images : 
-                typeof item.images === 'string' ? [item.images] : []
+        images: Array.isArray(item.images) 
+          ? item.images.filter((img): img is string => typeof img === 'string')
+          : typeof item.images === 'string' 
+            ? [item.images] 
+            : [],
+        rating: item.rating ? Number(item.rating) : 0
       }));
       
       setItems(transformedData);
