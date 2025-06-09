@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
+import Logo from './Logo';
 
 const Footer = () => {
   return (
@@ -11,9 +12,7 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">A</span>
-              </div>
+              <Logo size="sm" variant="white" />
               <span className="text-xl font-bold">AnyHire</span>
             </div>
             <p className="text-gray-400 mb-4">

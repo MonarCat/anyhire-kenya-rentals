@@ -35,24 +35,24 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Logo size="sm" />
-            <span className="text-xl font-bold text-blue-600">AnyHire</span>
+            <span className="text-xl font-bold text-green-600">AnyHire</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/search" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link to="/search" className="text-gray-700 hover:text-green-600 transition-colors">
               Browse Items
             </Link>
-            <Link to="/list-item" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link to="/list-item" className="text-gray-700 hover:text-green-600 transition-colors">
               List Item
             </Link>
-            <Link to="/pricing" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link to="/pricing" className="text-gray-700 hover:text-green-600 transition-colors">
               Pricing
             </Link>
-            <Link to="/safety-tips" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link to="/safety-tips" className="text-gray-700 hover:text-green-600 transition-colors">
               Safety
             </Link>
-            <Link to="/rental-agreement" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link to="/rental-agreement" className="text-gray-700 hover:text-green-600 transition-colors">
               Agreement
             </Link>
 
@@ -89,7 +89,7 @@ const Navbar = () => {
                 <Button variant="ghost" onClick={() => navigate('/auth')}>
                   Sign In
                 </Button>
-                <Button onClick={() => navigate('/auth')} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={() => navigate('/auth')} className="bg-green-600 hover:bg-green-700">
                   Get Started
                 </Button>
               </div>
@@ -111,35 +111,35 @@ const Navbar = () => {
             <div className="flex flex-col space-y-4">
               <Link 
                 to="/search" 
-                className="text-gray-700 hover:text-blue-600 transition-colors"
+                className="text-gray-700 hover:text-green-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Browse Items
               </Link>
               <Link 
                 to="/list-item" 
-                className="text-gray-700 hover:text-blue-600 transition-colors"
+                className="text-gray-700 hover:text-green-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 List Item
               </Link>
               <Link 
                 to="/pricing" 
-                className="text-gray-700 hover:text-blue-600 transition-colors"
+                className="text-gray-700 hover:text-green-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link 
                 to="/safety-tips" 
-                className="text-gray-700 hover:text-blue-600 transition-colors"
+                className="text-gray-700 hover:text-green-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Safety
               </Link>
               <Link 
                 to="/rental-agreement" 
-                className="text-gray-700 hover:text-blue-600 transition-colors"
+                className="text-gray-700 hover:text-green-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Agreement
@@ -149,14 +149,14 @@ const Navbar = () => {
                 <>
                   <Link 
                     to="/dashboard" 
-                    className="text-gray-700 hover:text-blue-600 transition-colors"
+                    className="text-gray-700 hover:text-green-600 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <Link 
                     to="/profile" 
-                    className="text-gray-700 hover:text-blue-600 transition-colors"
+                    className="text-gray-700 hover:text-green-600 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Profile
@@ -188,7 +188,7 @@ const Navbar = () => {
                       navigate('/auth');
                       setIsMenuOpen(false);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-green-600 hover:bg-green-700"
                   >
                     Get Started
                   </Button>

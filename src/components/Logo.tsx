@@ -16,8 +16,8 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', variant = 'default', className
   };
 
   const variantClasses = {
-    default: 'bg-gradient-to-br from-blue-600 to-blue-800 text-white',
-    white: 'bg-white text-blue-600 border-2 border-blue-600',
+    default: 'bg-gradient-to-br from-green-600 to-green-800 text-white',
+    white: 'bg-white text-green-600 border-2 border-green-600',
     dark: 'bg-gray-900 text-white'
   };
 

@@ -2,20 +2,17 @@
 import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import ChatBot from './ChatBot';
 
 interface LayoutProps {
   children: React.ReactNode;
   showNavbar?: boolean;
   showFooter?: boolean;
-  showChatBot?: boolean;
 }
 
 const Layout = ({ 
   children, 
   showNavbar = true, 
-  showFooter = true, 
-  showChatBot = true 
+  showFooter = true
 }: LayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col">
@@ -24,7 +21,6 @@ const Layout = ({
         {children}
       </main>
       {showFooter && <Footer />}
-      {showChatBot && <ChatBot />}
     </div>
   );
 };
