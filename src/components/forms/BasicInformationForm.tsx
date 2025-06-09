@@ -56,7 +56,10 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({
             name="category"
             required
             value={formData.category || ''}
-            onValueChange={(value) => setFormData({ ...formData, category: value })}
+            onValueChange={(value) => {
+              console.log('Selected category ID:', value);
+              setFormData({ ...formData, category: value });
+            }}
           >
             <SelectTrigger id="category">
               <SelectValue placeholder="Select category" />

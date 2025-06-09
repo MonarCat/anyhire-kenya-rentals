@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +21,7 @@ const FALLBACK_CATEGORIES: Category[] = [
 ];
 
 export const useCategories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -51,24 +50,17 @@ export const useCategories = () => {
       if (data && data.length > 0) {
         setCategories(data);
       } else {
-        console.log('No categories found, using fallback');
+        console.log('No categories found in database, keeping fallback categories');
+        // Keep fallback categories instead of showing toast
         setCategories(FALLBACK_CATEGORIES);
-        toast({
-          title: "Using Default Categories",
-          description: "No categories found in database, using defaults.",
-          variant: "default",
-        });
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
       setError('Failed to load categories');
       setCategories(FALLBACK_CATEGORIES);
       
-      toast({
-        title: "Connection Issue",
-        description: "Using default categories. The app will work normally.",
-        variant: "default",
-      });
+      // Only show toast for actual errors, not when no categories exist
+      console.log('Using fallback categories due to error');
     } finally {
       setLoading(false);
     }

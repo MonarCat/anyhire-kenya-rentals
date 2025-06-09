@@ -35,6 +35,19 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
     try {
       const { title, description, category, condition, price, period, minRental, address } = formData;
 
+      console.log('Form submission data:', {
+        title,
+        description, 
+        category,
+        condition,
+        price,
+        period,
+        minRental,
+        address,
+        selectedLocation,
+        imageCount: selectedImages.length
+      });
+
       if (!title || !description || !category || !condition || !price || !period) {
         toast({
           title: "Missing Information",
@@ -73,7 +86,7 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         user_id: user.id,
         title,
         description,
-        category_id: category,
+        category_id: category, // This is now properly the category ID (UUID)
         condition,
         price: parseInt(price) * 100,
         price_period: period,
@@ -87,13 +100,20 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         ad_type: currentPlan.adType || 'normal'
       };
 
+      console.log('Inserting item data:', itemData);
+
       const { data: newItem, error } = await supabase
         .from('items')
         .insert(itemData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database insert error:', error);
+        throw error;
+      }
+
+      console.log('Item created successfully:', newItem);
 
       toast({
         title: "Success!",
