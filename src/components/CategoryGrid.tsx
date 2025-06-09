@@ -6,12 +6,21 @@ import { useCategories } from '@/hooks/useCategories';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const CategoryGrid = () => {
-  const { categories, loading } = useCategories();
+  const { categories, loading, error } = useCategories();
 
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <LoadingSpinner size="lg" text="Loading categories..." />
+        <LoadingSpinner size="lg" text="Loading categories..." timeout={5000} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <p className="text-gray-600 mb-4">Unable to load categories</p>
+        <p className="text-sm text-gray-500">Showing default categories</p>
       </div>
     );
   }
