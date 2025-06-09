@@ -131,6 +131,12 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         imageCount: selectedImages.length
       });
 
+      // Validate category ID is a valid UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(category)) {
+        throw new Error(`Invalid category ID format: ${category}. Please select a valid category.`);
+      }
+
       // Upload images first
       let imageUrls: string[] = [];
       if (selectedImages.length > 0) {
@@ -150,7 +156,7 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         user_id: user.id,
         title: title.trim(),
         description: description.trim(),
-        category_id: category,
+        category_id: category, // This should now be a valid UUID
         condition,
         price: Math.round(Number(price) * 100), // Convert to cents
         price_period: period,

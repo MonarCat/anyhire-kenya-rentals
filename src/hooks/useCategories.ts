@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export interface Category {
   id: string;
@@ -12,13 +11,14 @@ export interface Category {
   sort_order?: number;
 }
 
+// Use proper UUIDs for fallback categories
 const FALLBACK_CATEGORIES: Category[] = [
-  { id: 'electronics', name: 'Electronics', icon: '📱' },
-  { id: 'tools', name: 'Tools & Equipment', icon: '🔧' },
-  { id: 'books', name: 'Books & Media', icon: '📚' },
-  { id: 'sports', name: 'Sports & Recreation', icon: '⚽' },
-  { id: 'furniture', name: 'Furniture', icon: '🪑' },
-  { id: 'other', name: 'Other', icon: '📦' },
+  { id: '00000000-0000-0000-0000-000000000001', name: 'Electronics', icon: '📱' },
+  { id: '00000000-0000-0000-0000-000000000002', name: 'Tools & Equipment', icon: '🔧' },
+  { id: '00000000-0000-0000-0000-000000000003', name: 'Books & Media', icon: '📚' },
+  { id: '00000000-0000-0000-0000-000000000004', name: 'Sports & Recreation', icon: '⚽' },
+  { id: '00000000-0000-0000-0000-000000000005', name: 'Furniture', icon: '🪑' },
+  { id: '00000000-0000-0000-0000-000000000006', name: 'Other', icon: '📦' },
 ];
 
 export const useCategories = () => {

@@ -58,6 +58,7 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({
             value={formData.category || ''}
             onValueChange={(value) => {
               console.log('Selected category ID:', value);
+              console.log('Available categories:', categories);
               setFormData({ ...formData, category: value });
             }}
           >
