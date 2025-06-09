@@ -1,12 +1,32 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+interface Item {
+  id: string;
+  title: string;
+  price: number;
+  price_period: string;
+  location: string;
+  condition: string;
+  images: string[];
+  ad_type: string;
+  rating?: number;
+  profiles?: {
+    full_name: string;
+  };
+  categories?: {
+    name: string;
+  };
+}
 
 const FeaturedItems = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,45 +35,74 @@ const FeaturedItems = () => {
 
   const fetchFeaturedItems = async () => {
     try {
+      console.log('Fetching featured items...');
+      setLoading(true);
+      
+      // Simplified query to avoid join issues
       const { data, error } = await supabase
         .from('items')
         .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url
-          ),
-          categories:category_id (
-            name
-          )
+          id,
+          title,
+          price,
+          price_period,
+          location,
+          condition,
+          images,
+          ad_type,
+          rating,
+          user_id
         `)
         .eq('is_available', true)
         .eq('is_featured', true)
         .order('created_at', { ascending: false })
         .limit(4);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Featured items fetched successfully:', data);
       setItems(data || []);
     } catch (error) {
       console.error('Error fetching featured items:', error);
+      // Set empty array instead of throwing to prevent UI breaks
+      setItems([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const formatPrice = (priceInCents: number) => {
+    return (priceInCents / 100).toLocaleString();
+  };
+
   if (loading) {
-    return <div>Loading featured items...</div>;
+    return (
+      <div className="flex justify-center py-8">
+        <LoadingSpinner size="lg" text="Loading featured items..." />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">No featured items available at the moment.</p>
+      </div>
+    );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {items.map((item: any) => (
+      {items.map((item) => (
         <Link key={item.id} to={`/item/${item.id}`}>
           <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
             <CardContent className="p-0">
               <div className="relative">
                 <img 
-                  src={item.images?.[0] || 'https://images.pexels.com/photos/325153/pexels-photo-325153.jpeg'} 
+                  src={item.images && item.images.length > 0 ? item.images[0] : 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=300&fit=crop'} 
                   alt={item.title}
                   className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform"
                 />
@@ -63,14 +112,14 @@ const FeaturedItems = () => {
                   </Badge>
                 )}
                 <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-                  ⭐ {item.rating || '0.0'}
+                  ⭐ {item.rating || 0}
                 </div>
               </div>
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2 line-clamp-2">{item.title}</h3>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-2xl font-bold text-green-600">
-                    KES {(item.price / 100).toLocaleString()}
+                    KES {formatPrice(item.price)}
                   </span>
                   <span className="text-sm text-gray-600">/{item.price_period}</span>
                 </div>
@@ -79,14 +128,9 @@ const FeaturedItems = () => {
                   {item.location}
                 </div>
                 <div className="flex justify-between items-center">
-                  <Badge variant="secondary" className="text-xs">
-                    {item.categories?.name}
+                  <Badge variant="secondary" className="text-xs capitalize">
+                    {item.condition}
                   </Badge>
-                  {item.profiles?.full_name && (
-                    <span className="text-xs text-gray-500">
-                      by {item.profiles.full_name}
-                    </span>
-                  )}
                 </div>
               </div>
             </CardContent>

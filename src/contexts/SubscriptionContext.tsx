@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -7,160 +7,135 @@ interface SubscriptionPlan {
   id: string;
   name: string;
   price: number;
+  currency: string;
   itemLimit: number;
   features: string[];
-  adType: 'normal' | 'top' | 'super' | 'vip';
+  adType: string;
+}
+
+interface UserSubscription {
+  plan_id: string;
+  status: string;
+  current_period_end: string | null;
 }
 
 interface SubscriptionContextType {
-  currentPlan: SubscriptionPlan;
-  plans: SubscriptionPlan[];
-  userItemCount: number;
+  currentPlan: SubscriptionPlan | null;
+  subscription: UserSubscription | null;
   canListMoreItems: boolean;
-  upgradePlan: (planId: string) => Promise<void>;
+  loading: boolean;
+  refreshSubscription: () => Promise<void>;
 }
-
-const plans: SubscriptionPlan[] = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    price: 0,
-    itemLimit: 5,
-    features: ['Up to 5 free listings', 'Basic support'],
-    adType: 'normal'
-  },
-  {
-    id: 'bronze',
-    name: 'Bronze',
-    price: 150,
-    itemLimit: 15,
-    features: ['Up to 15 listings', 'Normal ads', 'Email support'],
-    adType: 'normal'
-  },
-  {
-    id: 'silver',
-    name: 'Silver',
-    price: 350,
-    itemLimit: 40,
-    features: ['Up to 40 listings', 'Top ads placement', 'Priority support'],
-    adType: 'top'
-  },
-  {
-    id: 'gold',
-    name: 'Gold',
-    price: 750,
-    itemLimit: 100,
-    features: ['Up to 100 listings', 'Super top ads', 'Phone support'],
-    adType: 'super'
-  },
-  {
-    id: 'diamond',
-    name: 'Diamond',
-    price: 3500,
-    itemLimit: Infinity,
-    features: ['Unlimited listings', 'VIP ads placement', 'Dedicated support'],
-    adType: 'vip'
-  }
-];
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
-export const useSubscription = () => {
+const defaultPlans: SubscriptionPlan[] = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: 0,
+    currency: 'KES',
+    itemLimit: 3,
+    features: ['List up to 3 items', 'Basic support'],
+    adType: 'normal'
+  },
+  {
+    id: 'basic',
+    name: 'Basic',
+    price: 500,
+    currency: 'KES',
+    itemLimit: 10,
+    features: ['List up to 10 items', 'Priority support', 'Featured listings'],
+    adType: 'featured'
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: 1500,
+    currency: 'KES',
+    itemLimit: -1, // Unlimited
+    features: ['Unlimited listings', 'Priority support', 'Featured listings', 'Analytics'],
+    adType: 'premium'
+  }
+];
+
+export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null);
+  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSubscription = async () => {
+    if (!user) {
+      setCurrentPlan(defaultPlans[0]); // Free plan for non-authenticated users
+      setSubscription(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Try to fetch user subscription with simplified query
+      const { data: userSub, error } = await supabase
+        .from('user_subscriptions')
+        .select('plan_id, status, current_period_end')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle(); // Use maybeSingle to avoid 406 errors
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" which is acceptable
+        console.error('Error fetching subscription:', error);
+        // Fall back to free plan on error
+        setCurrentPlan(defaultPlans[0]);
+        setSubscription(null);
+        setLoading(false);
+        return;
+      }
+
+      setSubscription(userSub);
+
+      // Find the current plan
+      if (userSub && userSub.status === 'active') {
+        const plan = defaultPlans.find(p => p.id === userSub.plan_id) || defaultPlans[0];
+        setCurrentPlan(plan);
+      } else {
+        setCurrentPlan(defaultPlans[0]); // Default to free plan
+      }
+    } catch (error) {
+      console.error('Error in fetchSubscription:', error);
+      setCurrentPlan(defaultPlans[0]); // Default to free plan on any error
+      setSubscription(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscription();
+  }, [user]);
+
+  const canListMoreItems = currentPlan ? (currentPlan.itemLimit === -1 || currentPlan.itemLimit > 0) : false;
+
+  const value: SubscriptionContextType = {
+    currentPlan,
+    subscription,
+    canListMoreItems,
+    loading,
+    refreshSubscription: fetchSubscription,
+  };
+
+  return (
+    <SubscriptionContext.Provider value={value}>
+      {children}
+    </SubscriptionContext.Provider>
+  );
+};
+
+export const useSubscription = (): SubscriptionContextType => {
   const context = useContext(SubscriptionContext);
   if (context === undefined) {
     throw new Error('useSubscription must be used within a SubscriptionProvider');
   }
   return context;
-};
-
-export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
-  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>(plans[0]);
-  const [userItemCount, setUserItemCount] = useState(0);
-
-  useEffect(() => {
-    if (user) {
-      fetchUserSubscription();
-      fetchUserItemCount();
-    }
-  }, [user]);
-
-  const fetchUserSubscription = async () => {
-    if (!user) return;
-
-    try {
-      // Check for active subscription in database
-      const { data: subscription } = await supabase
-        .from('user_subscriptions')
-        .select('plan_id, status')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single();
-
-      if (subscription) {
-        const plan = plans.find(p => p.id === subscription.plan_id) || plans[0];
-        setCurrentPlan(plan);
-      } else {
-        // Fallback to localStorage for basic plans
-        const storedPlan = localStorage.getItem(`anyhire_plan_${user.id}`);
-        if (storedPlan) {
-          const plan = plans.find(p => p.id === storedPlan) || plans[0];
-          setCurrentPlan(plan);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching subscription:', error);
-      // Fallback to localStorage
-      const storedPlan = localStorage.getItem(`anyhire_plan_${user.id}`);
-      if (storedPlan) {
-        const plan = plans.find(p => p.id === storedPlan) || plans[0];
-        setCurrentPlan(plan);
-      }
-    }
-  };
-
-  const fetchUserItemCount = async () => {
-    if (!user) return;
-
-    try {
-      const { count } = await supabase
-        .from('items')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-
-      setUserItemCount(count || 0);
-    } catch (error) {
-      console.error('Error fetching user item count:', error);
-      // Fallback to localStorage
-      const storedItemCount = localStorage.getItem(`anyhire_items_${user.id}`);
-      setUserItemCount(storedItemCount ? parseInt(storedItemCount) : 0);
-    }
-  };
-
-  const canListMoreItems = userItemCount < currentPlan.itemLimit;
-
-  const upgradePlan = async (planId: string) => {
-    const newPlan = plans.find(p => p.id === planId);
-    if (newPlan && user) {
-      // For free plans, update immediately
-      if (newPlan.price === 0) {
-        setCurrentPlan(newPlan);
-        localStorage.setItem(`anyhire_plan_${user.id}`, planId);
-      }
-      // For paid plans, the upgrade will be handled after successful payment
-      // through the payment callback system
-    }
-  };
-
-  return (
-    <SubscriptionContext.Provider value={{
-      currentPlan,
-      plans,
-      userItemCount,
-      canListMoreItems,
-      upgradePlan
-    }}>
-      {children}
-    </SubscriptionContext.Provider>
-  );
 };
