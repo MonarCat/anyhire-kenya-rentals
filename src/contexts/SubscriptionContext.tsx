@@ -22,7 +22,9 @@ interface UserSubscription {
 interface SubscriptionContextType {
   currentPlan: SubscriptionPlan | null;
   subscription: UserSubscription | null;
+  plans: SubscriptionPlan[];
   canListMoreItems: boolean;
+  userItemCount: number;
   loading: boolean;
   refreshSubscription: () => Promise<void>;
 }
@@ -40,8 +42,8 @@ const defaultPlans: SubscriptionPlan[] = [
     adType: 'normal'
   },
   {
-    id: 'basic',
-    name: 'Basic',
+    id: 'silver',
+    name: 'Silver',
     price: 500,
     currency: 'KES',
     itemLimit: 10,
@@ -49,12 +51,30 @@ const defaultPlans: SubscriptionPlan[] = [
     adType: 'featured'
   },
   {
-    id: 'premium',
-    name: 'Premium',
+    id: 'gold',
+    name: 'Gold',
     price: 1500,
     currency: 'KES',
-    itemLimit: -1, // Unlimited
-    features: ['Unlimited listings', 'Priority support', 'Featured listings', 'Analytics'],
+    itemLimit: 50,
+    features: ['List up to 50 items', 'Priority support', 'Featured listings', 'Analytics'],
+    adType: 'premium'
+  },
+  {
+    id: 'platinum',
+    name: 'Platinum',
+    price: 3000,
+    currency: 'KES',
+    itemLimit: 200,
+    features: ['List up to 200 items', 'Priority support', 'Featured listings', 'Advanced analytics', 'Premium placement'],
+    adType: 'premium'
+  },
+  {
+    id: 'diamond',
+    name: 'Diamond',
+    price: 5000,
+    currency: 'KES',
+    itemLimit: Infinity,
+    features: ['Unlimited listings', 'VIP support', 'Featured listings', 'Advanced analytics', 'Premium placement', 'Custom branding'],
     adType: 'premium'
   }
 ];
@@ -63,12 +83,39 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
   const { user } = useAuth();
   const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
+  const [userItemCount, setUserItemCount] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const fetchUserItemCount = async () => {
+    if (!user) {
+      setUserItemCount(0);
+      return;
+    }
+
+    try {
+      const { count, error } = await supabase
+        .from('items')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_available', true);
+
+      if (error) {
+        console.error('Error fetching user item count:', error);
+        setUserItemCount(0);
+      } else {
+        setUserItemCount(count || 0);
+      }
+    } catch (error) {
+      console.error('Error in fetchUserItemCount:', error);
+      setUserItemCount(0);
+    }
+  };
 
   const fetchSubscription = async () => {
     if (!user) {
-      setCurrentPlan(defaultPlans[0]); // Free plan for non-authenticated users
+      setCurrentPlan(defaultPlans[0]);
       setSubscription(null);
+      setUserItemCount(0);
       setLoading(false);
       return;
     }
@@ -76,36 +123,36 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     try {
       setLoading(true);
       
-      // Try to fetch user subscription with simplified query
+      // Fetch user subscription
       const { data: userSub, error } = await supabase
         .from('user_subscriptions')
         .select('plan_id, status, current_period_end')
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .maybeSingle(); // Use maybeSingle to avoid 406 errors
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" which is acceptable
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching subscription:', error);
-        // Fall back to free plan on error
         setCurrentPlan(defaultPlans[0]);
         setSubscription(null);
-        setLoading(false);
-        return;
-      }
-
-      setSubscription(userSub);
-
-      // Find the current plan
-      if (userSub && userSub.status === 'active') {
-        const plan = defaultPlans.find(p => p.id === userSub.plan_id) || defaultPlans[0];
-        setCurrentPlan(plan);
       } else {
-        setCurrentPlan(defaultPlans[0]); // Default to free plan
+        setSubscription(userSub);
+
+        if (userSub && userSub.status === 'active') {
+          const plan = defaultPlans.find(p => p.id === userSub.plan_id) || defaultPlans[0];
+          setCurrentPlan(plan);
+        } else {
+          setCurrentPlan(defaultPlans[0]);
+        }
       }
+
+      // Fetch user item count
+      await fetchUserItemCount();
     } catch (error) {
       console.error('Error in fetchSubscription:', error);
-      setCurrentPlan(defaultPlans[0]); // Default to free plan on any error
+      setCurrentPlan(defaultPlans[0]);
       setSubscription(null);
+      setUserItemCount(0);
     } finally {
       setLoading(false);
     }
@@ -115,12 +162,15 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     fetchSubscription();
   }, [user]);
 
-  const canListMoreItems = currentPlan ? (currentPlan.itemLimit === -1 || currentPlan.itemLimit > 0) : false;
+  const canListMoreItems = currentPlan ? 
+    (currentPlan.itemLimit === Infinity || userItemCount < currentPlan.itemLimit) : false;
 
   const value: SubscriptionContextType = {
     currentPlan,
     subscription,
+    plans: defaultPlans,
     canListMoreItems,
+    userItemCount,
     loading,
     refreshSubscription: fetchSubscription,
   };

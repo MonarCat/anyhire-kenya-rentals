@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Eye, Edit, Trash2, TrendingUp, DollarSign, Package, Users } from 'lucide-react';
@@ -63,38 +62,40 @@ const Dashboard = () => {
         </div>
 
         {/* Subscription Status */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Current Plan: {currentPlan.name}</span>
-              <Badge variant={currentPlan.id === 'basic' ? 'secondary' : 'default'}>
-                {currentPlan.price === 0 ? 'Free' : `KES ${currentPlan.price}/month`}
-              </Badge>
-            </CardTitle>
-            <CardDescription>
-              You've used {userItemCount} of {currentPlan.itemLimit === Infinity ? '∞' : currentPlan.itemLimit} listings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-center">
-              <div className="flex-1">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full" 
-                    style={{ 
-                      width: currentPlan.itemLimit === Infinity 
-                        ? '0%' 
-                        : `${Math.min((userItemCount / currentPlan.itemLimit) * 100, 100)}%` 
-                    }}
-                  ></div>
+        {currentPlan && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Current Plan: {currentPlan.name}</span>
+                <Badge variant={currentPlan.id === 'silver' ? 'secondary' : 'default'}>
+                  {currentPlan.price === 0 ? 'Free' : `KES ${currentPlan.price}/month`}
+                </Badge>
+              </CardTitle>
+              <CardDescription>
+                You've used {userItemCount} of {currentPlan.itemLimit === Infinity ? '∞' : currentPlan.itemLimit} listings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full" 
+                      style={{ 
+                        width: currentPlan.itemLimit === Infinity 
+                          ? '0%' 
+                          : `${Math.min((userItemCount / currentPlan.itemLimit) * 100, 100)}%` 
+                      }}
+                    ></div>
+                  </div>
                 </div>
+                <Button asChild variant="outline" className="ml-4">
+                  <Link to="/pricing">Upgrade Plan</Link>
+                </Button>
               </div>
-              <Button asChild variant="outline" className="ml-4">
-                <Link to="/pricing">Upgrade Plan</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

@@ -17,12 +17,7 @@ interface Item {
   images: string[];
   ad_type: string;
   rating?: number;
-  profiles?: {
-    full_name: string;
-  };
-  categories?: {
-    name: string;
-  };
+  user_id: string;
 }
 
 const FeaturedItems = () => {
@@ -38,7 +33,6 @@ const FeaturedItems = () => {
       console.log('Fetching featured items...');
       setLoading(true);
       
-      // Simplified query to avoid join issues
       const { data, error } = await supabase
         .from('items')
         .select(`
@@ -64,10 +58,17 @@ const FeaturedItems = () => {
       }
 
       console.log('Featured items fetched successfully:', data);
-      setItems(data || []);
+      
+      // Transform the data to ensure images is always an array of strings
+      const transformedData = (data || []).map(item => ({
+        ...item,
+        images: Array.isArray(item.images) ? item.images : 
+                typeof item.images === 'string' ? [item.images] : []
+      }));
+      
+      setItems(transformedData);
     } catch (error) {
       console.error('Error fetching featured items:', error);
-      // Set empty array instead of throwing to prevent UI breaks
       setItems([]);
     } finally {
       setLoading(false);
