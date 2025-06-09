@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import FeaturedItems from '@/components/FeaturedItems';
 import CategoryGrid from '@/components/CategoryGrid';
+import Layout from '@/components/Layout';
 
 const Index = () => {
   const features = [
@@ -27,7 +28,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <Layout>
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-600 to-green-800 text-white py-20">
         <div className="container mx-auto px-4 text-center">
@@ -99,7 +100,7 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </div>
+    </Layout>
   );
 };
 
