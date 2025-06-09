@@ -6,10 +6,10 @@ interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   text?: string;
-  timeout?: number; // Optional timeout in milliseconds
+  timeout?: number;
 }
 
-const LoadingSpinner = ({ size = 'md', className, text, timeout = 10000 }: LoadingSpinnerProps) => {
+const LoadingSpinner = ({ size = 'md', className, text, timeout = 8000 }: LoadingSpinnerProps) => {
   const [showTimeout, setShowTimeout] = useState(false);
 
   const sizeClasses = {

@@ -26,8 +26,6 @@ export const useImageUpload = () => {
         } else {
           console.log(`Bucket ${bucketName} created successfully`);
         }
-      } else if (error) {
-        console.error('Error checking bucket:', error);
       }
     } catch (error) {
       console.error('Error ensuring bucket exists:', error);
@@ -41,33 +39,21 @@ export const useImageUpload = () => {
     const uploadedUrls: string[] = [];
 
     try {
-      // Ensure bucket exists
       await ensureBucketExists(folder);
 
       for (const file of files) {
-        // Validate file type
         if (!file.type.startsWith('image/')) {
-          toast({
-            title: "Invalid file type",
-            description: `${file.name} is not an image file.`,
-            variant: "destructive",
-          });
+          console.error(`${file.name} is not an image file`);
           continue;
         }
 
-        // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (file.size > maxSize) {
-          toast({
-            title: "File too large",
-            description: `${file.name} must be smaller than 5MB.`,
-            variant: "destructive",
-          });
+        if (file.size > 5 * 1024 * 1024) {
+          console.error(`${file.name} exceeds 5MB limit`);
           continue;
         }
 
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from(folder)
@@ -78,11 +64,6 @@ export const useImageUpload = () => {
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          toast({
-            title: "Upload failed",
-            description: `Failed to upload ${file.name}: ${uploadError.message}`,
-            variant: "destructive",
-          });
           continue;
         }
 
@@ -94,10 +75,7 @@ export const useImageUpload = () => {
       }
 
       if (uploadedUrls.length > 0) {
-        toast({
-          title: "Upload successful",
-          description: `Successfully uploaded ${uploadedUrls.length} image(s)`,
-        });
+        console.log(`Successfully uploaded ${uploadedUrls.length} image(s)`);
       }
 
       return uploadedUrls;
@@ -120,21 +98,18 @@ export const useImageUpload = () => {
     setUploading(true);
 
     try {
-      // Ensure bucket exists
       await ensureBucketExists(folder);
 
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         throw new Error('Invalid file type. Please select an image file.');
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('File too large. Please select an image smaller than 5MB.');
       }
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from(folder)
@@ -164,7 +139,6 @@ export const useImageUpload = () => {
     if (!imageUrl) return;
 
     try {
-      // Extract the file path from the URL
       const url = new URL(imageUrl);
       const pathParts = url.pathname.split('/');
       const bucket = pathParts[pathParts.length - 3];

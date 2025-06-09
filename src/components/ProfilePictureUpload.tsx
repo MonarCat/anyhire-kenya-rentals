@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Upload, X, ImagePlus } from 'lucide-react';
+import { Camera, Upload, X } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -27,13 +27,12 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>, fromCamera: boolean = false) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    console.log('File selected:', { fileName: file.name, fileSize: file.size, fromCamera });
+    console.log('File selected:', { fileName: file.name, fileSize: file.size });
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
@@ -43,7 +42,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -56,21 +54,19 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     setIsUploading(true);
     
     try {
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setPreviewUrl(e.target?.result as string);
       };
       reader.readAsDataURL(file);
 
-      // Upload image using profile-pictures bucket
       const uploadResult = await uploadImage(file, 'profile-pictures');
       
       if (uploadResult?.publicUrl) {
         onImageChange(uploadResult.publicUrl);
         toast({
-          title: "Profile picture updated",
-          description: "Your profile picture has been successfully updated.",
+          title: "Success!",
+          description: "Profile picture updated successfully.",
         });
       } else {
         throw new Error('Failed to get image URL');
@@ -85,30 +81,13 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       setPreviewUrl(null);
     } finally {
       setIsUploading(false);
-      // Reset file inputs
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      if (cameraInputRef.current) {
-        cameraInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
     }
   };
 
   const handleCameraCapture = () => {
     console.log('Camera capture requested');
-    
-    // Check if device supports camera
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      toast({
-        title: "Camera not supported",
-        description: "Your device doesn't support camera access.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Trigger the camera input
     if (cameraInputRef.current) {
       cameraInputRef.current.click();
     }
@@ -129,8 +108,8 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       onImageChange('');
       setPreviewUrl(null);
       toast({
-        title: "Profile picture removed",
-        description: "Your profile picture has been removed.",
+        title: "Success!",
+        description: "Profile picture removed.",
       });
     } catch (error) {
       console.error('Error removing profile picture:', error);
@@ -167,7 +146,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         )}
       </div>
 
-      <div className="flex gap-2 flex-wrap justify-center">
+      <div className="flex gap-2">
         <Button
           type="button"
           variant="outline"
@@ -176,7 +155,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           disabled={isUploading}
         >
           <Camera className="w-4 h-4 mr-2" />
-          {isUploading ? 'Uploading...' : 'Take Photo'}
+          {isUploading ? 'Uploading...' : 'Camera'}
         </Button>
         
         <Button
@@ -186,32 +165,30 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           onClick={handleGalleryUpload}
           disabled={isUploading}
         >
-          <ImagePlus className="w-4 h-4 mr-2" />
-          {isUploading ? 'Uploading...' : 'Choose Photo'}
+          <Upload className="w-4 h-4 mr-2" />
+          {isUploading ? 'Uploading...' : 'Gallery'}
         </Button>
       </div>
 
-      {/* Camera input - captures directly from camera */}
       <input
         ref={cameraInputRef}
         type="file"
         accept="image/*"
-        capture="user"
-        onChange={(e) => handleFileSelect(e, true)}
+        capture="environment"
+        onChange={handleFileSelect}
         className="hidden"
       />
 
-      {/* Gallery input - selects from gallery */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        onChange={(e) => handleFileSelect(e, false)}
+        onChange={handleFileSelect}
         className="hidden"
       />
 
       <p className="text-xs text-gray-500 text-center max-w-xs">
-        Take a new photo with your camera or choose an existing image from your gallery
+        Take a photo or choose from gallery
       </p>
     </div>
   );

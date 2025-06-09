@@ -21,90 +21,55 @@ const FALLBACK_CATEGORIES: Category[] = [
   { id: 'other', name: 'Other', icon: '📦' },
 ];
 
-// Global cache to prevent multiple API calls
-let categoriesCache: Category[] | null = null;
-let isLoading = false;
-let loadingPromise: Promise<void> | null = null;
-
 export const useCategories = () => {
-  const [categories, setCategories] = useState<Category[]>(categoriesCache || FALLBACK_CATEGORIES);
-  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const fetchCategories = async () => {
-    // If already loading, wait for the existing promise
-    if (isLoading && loadingPromise) {
-      await loadingPromise;
-      setCategories(categoriesCache || FALLBACK_CATEGORIES);
-      return;
-    }
+    try {
+      console.log('Fetching categories from Supabase...');
+      setLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, icon, description, image_url, sort_order')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true });
 
-    // If we have cached data, use it
-    if (categoriesCache) {
-      setCategories(categoriesCache);
-      return;
-    }
-
-    setLoading(true);
-    isLoading = true;
-    setError(null);
-    
-    loadingPromise = (async () => {
-      try {
-        console.log('Fetching categories from Supabase...');
-        
-        const { data, error } = await supabase
-          .from('categories')
-          .select('id, name, icon, description, image_url, sort_order')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true })
-          .order('name', { ascending: true });
-
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-
-        console.log('Categories fetched successfully:', data);
-        
-        if (data && data.length > 0) {
-          categoriesCache = data;
-          setCategories(data);
-        } else {
-          console.log('No categories found in database, using fallback categories');
-          categoriesCache = FALLBACK_CATEGORIES;
-          setCategories(FALLBACK_CATEGORIES);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        setError('Failed to load categories');
-        categoriesCache = FALLBACK_CATEGORIES;
-        setCategories(FALLBACK_CATEGORIES);
-        
-        console.log('Using fallback categories due to error');
-      } finally {
-        setLoading(false);
-        isLoading = false;
-        loadingPromise = null;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
-    })();
 
-    await loadingPromise;
+      console.log('Categories fetched successfully:', data);
+      
+      if (data && data.length > 0) {
+        setCategories(data);
+      } else {
+        console.log('No categories found in database, using fallback categories');
+        setCategories(FALLBACK_CATEGORIES);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setError('Failed to load categories');
+      setCategories(FALLBACK_CATEGORIES);
+      console.log('Using fallback categories due to error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchCategories();
-  }, []); // Empty dependency array to prevent re-fetching
+  }, []);
 
   return {
     categories,
     loading,
     error,
-    refetch: () => {
-      // Clear cache and refetch
-      categoriesCache = null;
-      fetchCategories();
-    },
+    refetch: fetchCategories,
   };
 };

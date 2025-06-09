@@ -28,8 +28,91 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
   const { toast } = useToast();
   const { uploadImages, uploading } = useImageUpload();
 
+  const validateForm = () => {
+    const { title, description, category, condition, price, period } = formData;
+
+    if (!title?.trim()) {
+      toast({
+        title: "Missing Title",
+        description: "Please enter an item title.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!description?.trim()) {
+      toast({
+        title: "Missing Description",
+        description: "Please enter an item description.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!category) {
+      toast({
+        title: "Missing Category",
+        description: "Please select a category.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!condition) {
+      toast({
+        title: "Missing Condition",
+        description: "Please select item condition.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
+      toast({
+        title: "Invalid Price",
+        description: "Please enter a valid price.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!period) {
+      toast({
+        title: "Missing Price Period",
+        description: "Please select a price period.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (selectedImages.length === 0) {
+      toast({
+        title: "Images Required",
+        description: "Please upload at least one image of your item.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to list an item.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -48,56 +131,37 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         imageCount: selectedImages.length
       });
 
-      if (!title || !description || !category || !condition || !price || !period) {
-        toast({
-          title: "Missing Information",
-          description: "Please fill in all required fields.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (selectedImages.length === 0) {
-        toast({
-          title: "Images Required",
-          description: "Please upload at least one image of your item.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
+      // Upload images first
       let imageUrls: string[] = [];
       if (selectedImages.length > 0) {
+        toast({
+          title: "Uploading Images",
+          description: "Please wait while we upload your images...",
+        });
+        
         imageUrls = await uploadImages(selectedImages, 'items');
         if (imageUrls.length === 0) {
-          toast({
-            title: "Upload Failed",
-            description: "Failed to upload images. Please try again.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
+          throw new Error('Failed to upload images');
         }
       }
 
+      // Prepare item data
       const itemData: any = {
         user_id: user.id,
-        title,
-        description,
-        category_id: category, // This is now properly the category ID (UUID)
+        title: title.trim(),
+        description: description.trim(),
+        category_id: category,
         condition,
-        price: parseInt(price) * 100,
+        price: Math.round(Number(price) * 100), // Convert to cents
         price_period: period,
         min_rental_period: minRental || null,
         location: selectedLocation || 'Kenya',
-        address: address || null,
+        address: address?.trim() || null,
         images: imageUrls,
         features: [],
         included_items: [],
         is_available: true,
-        ad_type: currentPlan.adType || 'normal'
+        ad_type: currentPlan?.adType || 'normal'
       };
 
       console.log('Inserting item data:', itemData);
@@ -110,7 +174,7 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
 
       if (error) {
         console.error('Database insert error:', error);
-        throw error;
+        throw new Error(`Failed to create listing: ${error.message}`);
       }
 
       console.log('Item created successfully:', newItem);
@@ -125,13 +189,14 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
       setSelectedImages([]);
       setSelectedLocation('');
 
-      setTimeout(() => navigate('/dashboard'), 1000);
+      // Navigate to dashboard after a short delay
+      setTimeout(() => navigate('/dashboard'), 1500);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating item:', error);
       toast({
         title: "Error",
-        description: "Failed to list item. Please try again.",
+        description: error.message || "Failed to list item. Please try again.",
         variant: "destructive",
       });
     } finally {
