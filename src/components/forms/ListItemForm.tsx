@@ -58,6 +58,17 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
       return false;
     }
 
+    // Validate that the selected category exists in the available categories
+    const categoryExists = categories.some(cat => cat.id === category);
+    if (!categoryExists) {
+      toast({
+        title: "Invalid Category",
+        description: "Please select a valid category from the list.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     if (!condition) {
       toast({
         title: "Missing Condition",
@@ -130,12 +141,6 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         selectedLocation,
         imageCount: selectedImages.length
       });
-
-      // Improved UUID validation - accepts both standard UUIDs and our fallback format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(category)) {
-        throw new Error(`Invalid category ID format: ${category}. Please select a valid category.`);
-      }
 
       // Upload images first
       let imageUrls: string[] = [];
@@ -224,7 +229,9 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
       <LocationForm 
         onLocationChange={(id, loc) => {
           setSelectedLocation(loc);
-        }} 
+        }}
+        formData={formData}
+        setFormData={setFormData}
       />
       <ImageUploadForm
         selectedImages={selectedImages}
