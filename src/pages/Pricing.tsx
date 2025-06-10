@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import PaymentButton from '@/components/PaymentButton';
 
 const Pricing = () => {
-  const { plans, currentPlan } = useSubscription();
+  const { plans, currentPlan, loading } = useSubscription();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -42,6 +42,18 @@ const Pricing = () => {
     window.location.reload();
   };
 
+  // Show loading state while subscription data is being fetched
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading pricing plans...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
@@ -54,14 +66,14 @@ const Pricing = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
           {plans.map((plan) => (
-            <Card key={plan.id} className={`relative ${currentPlan.id === plan.id ? 'ring-2 ring-green-500' : ''}`}>
+            <Card key={plan.id} className={`relative ${currentPlan?.id === plan.id ? 'ring-2 ring-green-500' : ''}`}>
               <CardHeader className="text-center">
                 {plan.id === 'silver' && (
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600">
                     Most Popular
                   </Badge>
                 )}
-                {currentPlan.id === plan.id && (
+                {currentPlan?.id === plan.id && (
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600">
                     Current Plan
                   </Badge>
@@ -85,7 +97,7 @@ const Pricing = () => {
                   ))}
                 </ul>
                 
-                {currentPlan.id === plan.id ? (
+                {currentPlan?.id === plan.id ? (
                   <Button className="w-full" variant="outline" disabled>
                     Current Plan
                   </Button>
