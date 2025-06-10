@@ -17,7 +17,6 @@ import {
   LogOut,
   Heart,
   Wallet,
-  Bell,
   HelpCircle
 } from 'lucide-react';
 
@@ -36,10 +35,8 @@ const MobileNavigation: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Fetch unread message count
-    // This would be implemented with your messaging system
     if (user) {
-      // fetchUnreadMessageCount();
+      // Fetch unread message count would go here
     }
   }, [user]);
 
@@ -66,12 +63,6 @@ const MobileNavigation: React.FC = () => {
       icon: <MessageSquare className="w-5 h-5" />,
       requiresAuth: true,
       badge: unreadMessages
-    },
-    {
-      label: 'Profile',
-      href: '/profile',
-      icon: <User className="w-5 h-5" />,
-      requiresAuth: true
     }
   ];
 
@@ -101,10 +92,6 @@ const MobileNavigation: React.FC = () => {
     }
   ];
 
-  const handleNavigation = (href: string) => {
-    setIsOpen(false);
-  };
-
   const handleLogout = async () => {
     try {
       await signOut();
@@ -123,7 +110,7 @@ const MobileNavigation: React.FC = () => {
 
   return (
     <>
-      {/* Mobile Navigation Bar */}
+      {/* MOBILE ONLY - Bottom Navigation Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div className="flex items-center justify-around py-2">
           {navigationItems.slice(0, 4).map((item) => {
@@ -214,7 +201,7 @@ const MobileNavigation: React.FC = () => {
                       <Link
                         key={item.href}
                         to={item.href}
-                        onClick={() => handleNavigation(item.href)}
+                        onClick={() => setIsOpen(false)}
                         className={`flex items-center space-x-3 w-full p-3 rounded-lg transition-colors ${
                           isActivePath(item.href)
                             ? 'bg-blue-50 text-blue-600'
@@ -252,7 +239,7 @@ const MobileNavigation: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom padding for mobile nav */}
+      {/* Bottom padding for mobile nav - MOBILE ONLY */}
       <div className="md:hidden h-16" />
     </>
   );

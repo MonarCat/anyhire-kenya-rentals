@@ -15,6 +15,7 @@ import ListItem from '@/pages/ListItem';
 import ImprovedListItem from '@/pages/ImprovedListItem';
 import Profile from '@/pages/Profile';
 import Dashboard from '@/pages/Dashboard';
+import Messages from '@/pages/Messages';
 import Pricing from '@/pages/Pricing';
 import NotFound from '@/pages/NotFound';
 import TermsOfService from '@/pages/TermsOfService';
@@ -27,18 +28,15 @@ import PaymentCallback from '@/pages/PaymentCallback';
 
 import './App.css';
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime)
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       retry: (failureCount, error: any) => {
-        // Don't retry on 4xx errors
         if (error?.status >= 400 && error?.status < 500) {
           return false;
         }
-        // Retry up to 3 times for other errors
         return failureCount < 3;
       },
       refetchOnWindowFocus: false,
@@ -66,6 +64,7 @@ function App() {
                   <Route path="/list-item-basic" element={<ListItem />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/messages" element={<Messages />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
