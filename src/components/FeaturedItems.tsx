@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MapPin, Home, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -23,6 +24,7 @@ interface Item {
 const FeaturedItems = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFeaturedItems();
@@ -32,6 +34,7 @@ const FeaturedItems = () => {
     try {
       console.log('Fetching featured items...');
       setLoading(true);
+      setError(null);
       
       const { data, error } = await supabase
         .from('items')
@@ -48,18 +51,16 @@ const FeaturedItems = () => {
           user_id
         `)
         .eq('is_available', true)
-        .eq('is_featured', true)
         .order('created_at', { ascending: false })
-        .limit(4);
+        .limit(8);
 
       if (error) {
         console.error('Supabase error:', error);
         throw error;
       }
 
-      console.log('Featured items fetched successfully:', data);
+      console.log('Items fetched successfully:', data);
       
-      // Transform the data to ensure images is always an array of strings
       const transformedData: Item[] = (data || []).map(item => ({
         ...item,
         images: Array.isArray(item.images) 
@@ -73,6 +74,7 @@ const FeaturedItems = () => {
       setItems(transformedData);
     } catch (error) {
       console.error('Error fetching featured items:', error);
+      setError('Failed to load items');
       setItems([]);
     } finally {
       setLoading(false);
@@ -83,6 +85,13 @@ const FeaturedItems = () => {
     return (priceInCents / 100).toLocaleString();
   };
 
+  const getImageUrl = (images: string[]) => {
+    if (images && images.length > 0) {
+      return images[0];
+    }
+    return 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=300&fit=crop';
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -91,10 +100,35 @@ const FeaturedItems = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600 mb-4">{error}</p>
+        <div className="flex justify-center gap-4">
+          <Button onClick={fetchFeaturedItems} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+          <Button asChild>
+            <Link to="/">
+              <Home className="w-4 h-4 mr-2" />
+              Go Home
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">No featured items available at the moment.</p>
+        <p className="text-gray-600 mb-4">No featured items available at the moment.</p>
+        <Button asChild>
+          <Link to="/search">
+            Browse All Items
+          </Link>
+        </Button>
       </div>
     );
   }
@@ -107,9 +141,13 @@ const FeaturedItems = () => {
             <CardContent className="p-0">
               <div className="relative">
                 <img 
-                  src={item.images && item.images.length > 0 ? item.images[0] : 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=300&fit=crop'} 
+                  src={getImageUrl(item.images)} 
                   alt={item.title}
                   className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=300&fit=crop';
+                  }}
                 />
                 {item.ad_type !== 'normal' && (
                   <Badge className="absolute top-2 left-2 bg-yellow-500 text-black">

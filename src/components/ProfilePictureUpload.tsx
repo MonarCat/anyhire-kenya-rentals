@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X, User } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
@@ -52,6 +53,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     }
 
     setIsUploading(true);
+    setImageError(false);
     
     try {
       const reader = new FileReader();
@@ -79,6 +81,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         variant: "destructive",
       });
       setPreviewUrl(null);
+      setImageError(true);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -107,6 +110,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       await deleteImage(currentImageUrl);
       onImageChange('');
       setPreviewUrl(null);
+      setImageError(false);
       toast({
         title: "Success!",
         description: "Profile picture removed.",
@@ -121,19 +125,31 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     }
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   const displayImageUrl = previewUrl || currentImageUrl;
+  const hasValidImage = displayImageUrl && !imageError;
 
   return (
     <div className={`flex flex-col items-center space-y-4 ${className}`}>
       <div className="relative">
         <Avatar className="w-24 h-24">
-          <AvatarImage src={displayImageUrl} alt="Profile picture" />
-          <AvatarFallback>
-            <Camera className="w-8 h-8 text-gray-400" />
-          </AvatarFallback>
+          {hasValidImage ? (
+            <AvatarImage 
+              src={displayImageUrl} 
+              alt="Profile picture" 
+              onError={handleImageError}
+            />
+          ) : (
+            <AvatarFallback>
+              <User className="w-8 h-8 text-gray-400" />
+            </AvatarFallback>
+          )}
         </Avatar>
         
-        {displayImageUrl && (
+        {hasValidImage && (
           <Button
             type="button"
             variant="destructive"
