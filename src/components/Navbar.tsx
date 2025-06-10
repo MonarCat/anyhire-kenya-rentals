@@ -14,15 +14,16 @@ import {
 import { Search, Plus, Menu, User, Settings, LogOut, MessageSquare } from 'lucide-react';
 import Logo from './Logo';
 import NotificationCenter from './notifications/NotificationCenter';
+import { supabase } from '@/integrations/supabase/client';
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await supabase.auth.signOut();
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -67,12 +68,6 @@ const Navbar: React.FC = () => {
                   <Link to="/list-item">
                     <Plus className="w-4 h-4 mr-2" />
                     List Item
-                  </Link>
-                </Button>
-
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/messages">
-                    <MessageSquare className="w-4 h-4" />
                   </Link>
                 </Button>
 
@@ -166,13 +161,6 @@ const Navbar: React.FC = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     List an Item
-                  </Link>
-                  <Link
-                    to="/messages"
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Messages
                   </Link>
                   <Link
                     to="/profile"
