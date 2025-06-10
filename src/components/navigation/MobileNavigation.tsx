@@ -32,7 +32,7 @@ interface NavigationItem {
 const MobileNavigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -107,7 +107,7 @@ const MobileNavigation: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
       setIsOpen(false);
     } catch (error) {
       console.error('Logout failed:', error);
