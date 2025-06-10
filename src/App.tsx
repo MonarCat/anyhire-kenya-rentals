@@ -1,72 +1,88 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import Dashboard from "./pages/Dashboard";
-import ListItem from "./pages/ListItem";
-import Search from "./pages/Search";
-import ItemDetails from "./pages/ItemDetails";
-import Profile from "./pages/Profile";
-import Pricing from "./pages/Pricing";
-import PaymentCallback from "./pages/PaymentCallback";
-import RentalAgreement from "./pages/RentalAgreement";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import CookiePolicy from "./pages/CookiePolicy";
-import SafetyTips from "./pages/SafetyTips";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import Layout from '@/components/Layout';
 
+// Pages
+import Index from '@/pages/Index';
+import Auth from '@/pages/Auth';
+import Search from '@/pages/Search';
+import ItemDetails from '@/pages/ItemDetails';
+import ListItem from '@/pages/ListItem';
+import ImprovedListItem from '@/pages/ImprovedListItem';
+import Profile from '@/pages/Profile';
+import Dashboard from '@/pages/Dashboard';
+import Pricing from '@/pages/Pricing';
+import NotFound from '@/pages/NotFound';
+import TermsOfService from '@/pages/TermsOfService';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import CookiePolicy from '@/pages/CookiePolicy';
+import SafetyTips from '@/pages/SafetyTips';
+import RentalAgreement from '@/pages/RentalAgreement';
+import ResetPassword from '@/pages/ResetPassword';
+import PaymentCallback from '@/pages/PaymentCallback';
+
+import './App.css';
+
+// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 3,
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
+        // Retry up to 3 times for other errors
+        return failureCount < 3;
+      },
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <SubscriptionProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/reset-password" element={<ResetPassword />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/list-item" element={<ListItem />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/item/:id" element={<ItemDetails />} />
-                <Route path="/profile/:id?" element={<Profile />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/payment-callback" element={<PaymentCallback />} />
-                <Route path="/rental-agreement" element={<RentalAgreement />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/cookie-policy" element={<CookiePolicy />} />
-                <Route path="/safety-tips" element={<SafetyTips />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </SubscriptionProvider>
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
+function App() {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/item/:id" element={<ItemDetails />} />
+                  <Route path="/list-item" element={<ImprovedListItem />} />
+                  <Route path="/list-item-basic" element={<ListItem />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/cookies" element={<CookiePolicy />} />
+                  <Route path="/safety" element={<SafetyTips />} />
+                  <Route path="/rental-agreement" element={<RentalAgreement />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/payment/callback" element={<PaymentCallback />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Layout>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </Router>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
 
 export default App;

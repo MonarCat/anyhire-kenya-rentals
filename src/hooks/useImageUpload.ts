@@ -9,7 +9,7 @@ export const useImageUpload = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const uploadImages = async (files: File[], folder: string = 'items'): Promise<string[]> => {
+  const uploadImages = async (files: File[], folder: string = 'item-images'): Promise<string[]> => {
     if (!user || files.length === 0) return [];
 
     setUploading(true);
@@ -22,8 +22,13 @@ export const useImageUpload = () => {
           continue;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-          console.error(`${file.name} exceeds 5MB limit`);
+        if (file.size > 50 * 1024 * 1024) { // 50MB limit for item images
+          console.error(`${file.name} exceeds 50MB limit`);
+          toast({
+            title: "File too large",
+            description: `${file.name} exceeds the 50MB limit`,
+            variant: "destructive",
+          });
           continue;
         }
 
@@ -39,6 +44,11 @@ export const useImageUpload = () => {
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
+          toast({
+            title: "Upload failed",
+            description: `Failed to upload ${file.name}`,
+            variant: "destructive",
+          });
           continue;
         }
 
@@ -50,7 +60,10 @@ export const useImageUpload = () => {
       }
 
       if (uploadedUrls.length > 0) {
-        console.log(`Successfully uploaded ${uploadedUrls.length} image(s)`);
+        toast({
+          title: "Upload successful",
+          description: `Successfully uploaded ${uploadedUrls.length} image(s)`,
+        });
       }
 
       return uploadedUrls;
@@ -77,8 +90,10 @@ export const useImageUpload = () => {
         throw new Error('Invalid file type. Please select an image file.');
       }
 
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('File too large. Please select an image smaller than 5MB.');
+      const sizeLimit = folder === 'avatars' ? 5 * 1024 * 1024 : 50 * 1024 * 1024; // 5MB for avatars, 50MB for items
+      if (file.size > sizeLimit) {
+        const limitMB = folder === 'avatars' ? '5MB' : '50MB';
+        throw new Error(`File too large. Please select an image smaller than ${limitMB}.`);
       }
 
       const fileExt = file.name.split('.').pop();
