@@ -1,22 +1,26 @@
-// Updated PricingForm.tsx
+
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertCircle } from 'lucide-react';
 
 interface PricingFormProps {
   formData: Record<string, any>;
   setFormData: (data: Record<string, any>) => void;
+  errors?: Record<string, string>;
 }
 
-const PricingForm: React.FC<PricingFormProps> = ({ formData, setFormData }) => {
+const PricingForm: React.FC<PricingFormProps> = ({ formData, setFormData, errors = {} }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Pricing & Availability</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="price">Rental Price (KES) *</Label>
+          <Label htmlFor="price" className="flex items-center">
+            Rental Price (KES) <span className="text-red-500 ml-1">*</span>
+          </Label>
           <Input
             id="price"
             name="price"
@@ -26,18 +30,27 @@ const PricingForm: React.FC<PricingFormProps> = ({ formData, setFormData }) => {
             required
             value={formData.price || ''}
             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+            className={errors.price ? 'border-red-500' : ''}
           />
+          {errors.price && (
+            <div className="flex items-center mt-1 text-red-500 text-sm">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.price}
+            </div>
+          )}
         </div>
 
         <div>
-          <Label htmlFor="period">Rental Period *</Label>
+          <Label htmlFor="period" className="flex items-center">
+            Rental Period <span className="text-red-500 ml-1">*</span>
+          </Label>
           <Select
             name="period"
             required
             value={formData.period || ''}
             onValueChange={(value) => setFormData({ ...formData, period: value })}
           >
-            <SelectTrigger>
+            <SelectTrigger className={errors.period ? 'border-red-500' : ''}>
               <SelectValue placeholder="Per..." />
             </SelectTrigger>
             <SelectContent>
@@ -47,6 +60,12 @@ const PricingForm: React.FC<PricingFormProps> = ({ formData, setFormData }) => {
               <SelectItem value="month">Per Month</SelectItem>
             </SelectContent>
           </Select>
+          {errors.period && (
+            <div className="flex items-center mt-1 text-red-500 text-sm">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.period}
+            </div>
+          )}
         </div>
       </div>
 

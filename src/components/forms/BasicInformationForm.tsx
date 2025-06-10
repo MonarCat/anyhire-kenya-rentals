@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertCircle } from 'lucide-react';
 
 interface BasicInformationFormProps {
   categories: {
@@ -13,19 +14,23 @@ interface BasicInformationFormProps {
   }[];
   formData: Record<string, any>;
   setFormData: (data: Record<string, any>) => void;
+  errors?: Record<string, string>;
 }
 
 const BasicInformationForm: React.FC<BasicInformationFormProps> = ({ 
   categories, 
   formData, 
-  setFormData 
+  setFormData,
+  errors = {}
 }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Basic Information</h3>
 
       <div>
-        <Label htmlFor="title">Item Title *</Label>
+        <Label htmlFor="title" className="flex items-center">
+          Item Title <span className="text-red-500 ml-1">*</span>
+        </Label>
         <Input
           id="title"
           name="title"
@@ -33,11 +38,20 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({
           required
           value={formData.title || ''}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          className={errors.title ? 'border-red-500' : ''}
         />
+        {errors.title && (
+          <div className="flex items-center mt-1 text-red-500 text-sm">
+            <AlertCircle className="w-4 h-4 mr-1" />
+            {errors.title}
+          </div>
+        )}
       </div>
 
       <div>
-        <Label htmlFor="description">Description *</Label>
+        <Label htmlFor="description" className="flex items-center">
+          Description <span className="text-red-500 ml-1">*</span>
+        </Label>
         <Textarea
           id="description"
           name="description"
@@ -46,12 +60,21 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({
           required
           value={formData.description || ''}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className={errors.description ? 'border-red-500' : ''}
         />
+        {errors.description && (
+          <div className="flex items-center mt-1 text-red-500 text-sm">
+            <AlertCircle className="w-4 h-4 mr-1" />
+            {errors.description}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="category">Category *</Label>
+          <Label htmlFor="category" className="flex items-center">
+            Category <span className="text-red-500 ml-1">*</span>
+          </Label>
           <Select
             name="category"
             required
@@ -62,7 +85,7 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({
               setFormData({ ...formData, category: value });
             }}
           >
-            <SelectTrigger id="category">
+            <SelectTrigger id="category" className={errors.category ? 'border-red-500' : ''}>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent className="max-h-[300px] overflow-y-auto">
@@ -82,17 +105,25 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({
               )}
             </SelectContent>
           </Select>
+          {errors.category && (
+            <div className="flex items-center mt-1 text-red-500 text-sm">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.category}
+            </div>
+          )}
         </div>
 
         <div>
-          <Label htmlFor="condition">Condition *</Label>
+          <Label htmlFor="condition" className="flex items-center">
+            Condition <span className="text-red-500 ml-1">*</span>
+          </Label>
           <Select
             name="condition"
             required
             value={formData.condition || ''}
             onValueChange={(value) => setFormData({ ...formData, condition: value })}
           >
-            <SelectTrigger id="condition">
+            <SelectTrigger id="condition" className={errors.condition ? 'border-red-500' : ''}>
               <SelectValue placeholder="Item condition" />
             </SelectTrigger>
             <SelectContent>
@@ -102,6 +133,12 @@ const BasicInformationForm: React.FC<BasicInformationFormProps> = ({
               <SelectItem value="fair">Fair</SelectItem>
             </SelectContent>
           </Select>
+          {errors.condition && (
+            <div className="flex items-center mt-1 text-red-500 text-sm">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.condition}
+            </div>
+          )}
         </div>
       </div>
     </div>
