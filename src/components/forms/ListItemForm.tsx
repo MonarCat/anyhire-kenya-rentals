@@ -58,7 +58,6 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
       return false;
     }
 
-    // Validate that the selected category exists in the available categories
     const categoryExists = categories.some(cat => cat.id === category);
     if (!categoryExists) {
       toast({
@@ -108,6 +107,19 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
     return true;
   };
 
+  const getAdType = () => {
+    switch (currentPlan?.adType) {
+      case 'top':
+        return 'premium';
+      case 'super':
+        return 'featured';
+      case 'vip':
+        return 'diamond';
+      default:
+        return 'normal';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -129,6 +141,8 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
     try {
       const { title, description, category, condition, price, period, minRental, address } = formData;
 
+      console.log('Selected category ID:', category);
+      console.log('Available categories:', categories);
       console.log('Form submission data:', {
         title,
         description, 
@@ -172,7 +186,7 @@ const ListItemForm: React.FC<ListItemFormProps> = ({ categories }) => {
         features: [],
         included_items: [],
         is_available: true,
-        ad_type: currentPlan?.adType || 'normal'
+        ad_type: getAdType()
       };
 
       console.log('Inserting item data:', itemData);

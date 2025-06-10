@@ -22,7 +22,7 @@ export const useRealtimeItems = () => {
           .from('items')
           .select(`
             *,
-            categories:category_id (
+            categories!inner (
               id,
               name,
               icon

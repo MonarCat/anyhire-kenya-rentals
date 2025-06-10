@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Home, RefreshCw } from 'lucide-react';
+import { MapPin, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import HomeButton from '@/components/HomeButton';
 
 interface Item {
   id: string;
@@ -109,12 +110,7 @@ const FeaturedItems = () => {
             <RefreshCw className="w-4 h-4 mr-2" />
             Try Again
           </Button>
-          <Button asChild>
-            <Link to="/">
-              <Home className="w-4 h-4 mr-2" />
-              Go Home
-            </Link>
-          </Button>
+          <HomeButton />
         </div>
       </div>
     );
@@ -124,11 +120,13 @@ const FeaturedItems = () => {
     return (
       <div className="text-center py-8">
         <p className="text-gray-600 mb-4">No featured items available at the moment.</p>
-        <Button asChild>
-          <Link to="/search">
-            Browse All Items
-          </Link>
-        </Button>
+        <div className="flex justify-center gap-4">
+          <Button onClick={fetchFeaturedItems} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <HomeButton />
+        </div>
       </div>
     );
   }
