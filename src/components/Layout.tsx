@@ -13,24 +13,22 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Single Header/Navbar */}
+      {/* SINGLE NAVBAR - ONLY ONE IN ENTIRE APP */}
       <Navbar />
       
-      {/* Main Content Area */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 pb-16 md:pb-0">
         {children}
       </main>
       
-      {/* Single Footer */}
+      {/* SINGLE FOOTER - ONLY ONE IN ENTIRE APP */}
       <Footer />
       
-      {/* Mobile Navigation - Only for mobile */}
+      {/* MOBILE BOTTOM NAV - MOBILE ONLY */}
       <MobileNavigation />
       
-      {/* Chat Bot */}
+      {/* UTILITIES */}
       <ChatBot />
-      
-      {/* Toast Notifications */}
       <Toaster />
     </div>
   );

@@ -74,6 +74,12 @@ const MobileNavigation: React.FC = () => {
       requiresAuth: true
     },
     {
+      label: 'Profile',
+      href: '/profile',
+      icon: <User className="w-5 h-5" />,
+      requiresAuth: true
+    },
+    {
       label: 'Favorites',
       href: '/favorites',
       icon: <Heart className="w-5 h-5" />,
@@ -110,7 +116,7 @@ const MobileNavigation: React.FC = () => {
 
   return (
     <>
-      {/* MOBILE ONLY - Bottom Navigation Bar */}
+      {/* MOBILE BOTTOM NAVIGATION - NO HEADERS OR FOOTERS HERE */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div className="flex items-center justify-around py-2">
           {navigationItems.slice(0, 4).map((item) => {
@@ -140,7 +146,7 @@ const MobileNavigation: React.FC = () => {
             );
           })}
           
-          {/* Menu Button */}
+          {/* MORE MENU */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button 
@@ -159,7 +165,7 @@ const MobileNavigation: React.FC = () => {
               </SheetHeader>
               
               <div className="mt-6">
-                {/* User Section */}
+                {/* USER SECTION */}
                 {user ? (
                   <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg mb-6">
                     <Avatar className="w-12 h-12">
@@ -192,7 +198,7 @@ const MobileNavigation: React.FC = () => {
                   </div>
                 )}
 
-                {/* Navigation Items */}
+                {/* SECONDARY NAVIGATION */}
                 <div className="space-y-1">
                   {secondaryItems.map((item) => {
                     if (item.requiresAuth && !user) return null;
@@ -220,7 +226,7 @@ const MobileNavigation: React.FC = () => {
                   })}
                 </div>
 
-                {/* Logout Button */}
+                {/* LOGOUT */}
                 {user && (
                   <div className="mt-6 pt-6 border-t">
                     <Button
@@ -239,7 +245,7 @@ const MobileNavigation: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom padding for mobile nav - MOBILE ONLY */}
+      {/* MOBILE BOTTOM PADDING */}
       <div className="md:hidden h-16" />
     </>
   );

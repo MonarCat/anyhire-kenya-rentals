@@ -54,6 +54,7 @@ function App() {
         <Router>
           <AuthProvider>
             <SubscriptionProvider>
+              {/* SINGLE LAYOUT WRAPPER - ALL PAGES USE THIS LAYOUT */}
               <Layout>
                 <Routes>
                   <Route path="/" element={<Index />} />
