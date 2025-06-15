@@ -49,13 +49,27 @@ const CategoryGrid = () => {
     );
   }
 
+  // Debug log
+  console.log("Fetched categories:", categories);
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {categories.map((category) => (
         <Link key={category.id} to={`/search?category=${encodeURIComponent(category.name)}`}>
           <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
             <CardContent className="p-6 text-center">
-              <div className="text-4xl mb-2">{category.icon || '📦'}</div>
+              {category.image_url ? (
+                <img
+                  src={category.image_url}
+                  alt={category.name}
+                  className="mx-auto mb-2 w-16 h-16 object-cover rounded-full border bg-gray-100"
+                  onError={e => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="text-4xl mb-2">{category.icon || '📦'}</div>
+              )}
               <h3 className="font-semibold text-sm">{category.name}</h3>
               {category.description && (
                 <p className="text-xs text-gray-600 mt-1">{category.description}</p>

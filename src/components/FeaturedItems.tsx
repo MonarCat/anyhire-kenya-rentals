@@ -20,6 +20,7 @@ interface Item {
   ad_type: string;
   rating?: number;
   user_id: string;
+  category_id?: string;
 }
 
 const FeaturedItems = () => {
@@ -36,7 +37,7 @@ const FeaturedItems = () => {
       console.log('Fetching featured items...');
       setLoading(true);
       setError(null);
-      
+
       const { data, error } = await supabase
         .from('items')
         .select(`
@@ -49,7 +50,8 @@ const FeaturedItems = () => {
           images,
           ad_type,
           rating,
-          user_id
+          user_id,
+          category_id
         `)
         .eq('is_available', true)
         .order('created_at', { ascending: false })
@@ -61,7 +63,7 @@ const FeaturedItems = () => {
       }
 
       console.log('Items fetched successfully:', data);
-      
+
       const transformedData: Item[] = (data || []).map(item => ({
         ...item,
         images: Array.isArray(item.images) 
@@ -130,6 +132,9 @@ const FeaturedItems = () => {
       </div>
     );
   }
+
+  // Debug for item images
+  console.log('Featured items to display:', items);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

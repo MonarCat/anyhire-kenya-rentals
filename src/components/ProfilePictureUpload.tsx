@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -6,6 +5,8 @@ import { Camera, Upload, X, User } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+
+import { cropImageToSquare } from '@/utils/imageUtils';
 
 interface ProfilePictureUploadProps {
   currentImageUrl?: string;
@@ -54,15 +55,20 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
     setIsUploading(true);
     setImageError(false);
-    
+
     try {
+      // Crop image to square before upload
+      const croppedFile = await cropImageToSquare(file);
+
+      // Local preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setPreviewUrl(e.target?.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(croppedFile);
 
-      const uploadResult = await uploadImage(file, 'profile-pictures');
+      // Upload cropped image
+      const uploadResult = await uploadImage(croppedFile, 'profile-pictures');
       
       if (uploadResult?.publicUrl) {
         onImageChange(uploadResult.publicUrl);
@@ -204,7 +210,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       />
 
       <p className="text-xs text-gray-500 text-center max-w-xs">
-        Take a photo or choose from gallery
+        Take a photo or choose from gallery. Images will be auto-cropped to square before upload.
       </p>
     </div>
   );
