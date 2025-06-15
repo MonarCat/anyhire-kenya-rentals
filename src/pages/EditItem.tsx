@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +17,7 @@ const EditItem = () => {
   const { user } = useAuth();
   const { categories, loading: categoriesLoading } = useCategories();
 
-  const { data: item, loading: itemLoading, error } = useQuery({
+  const { data: item, isLoading: itemLoading, error } = useQuery({
     queryKey: ['item', id],
     queryFn: async () => {
       if (!id) throw new Error('Item ID is required');

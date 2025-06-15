@@ -11,6 +11,7 @@ interface EnhancedImageUploadProps {
   onRemoveImage: (index: number) => void;
   maxFiles?: number;
   maxSizePerFile?: number;
+  existingImages?: string[]; // <-- added
 }
 
 const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
@@ -18,7 +19,8 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
   onImageSelection,
   onRemoveImage,
   maxFiles = 5,
-  maxSizePerFile = 5 * 1024 * 1024 // 5MB
+  maxSizePerFile = 5 * 1024 * 1024, // 5MB
+  existingImages = []
 }) => {
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -29,11 +31,9 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
     if (!file.type.startsWith('image/')) {
       return `${file.name} is not an image file`;
     }
-    
     if (file.size > maxSizePerFile) {
       return `${file.name} exceeds ${Math.round(maxSizePerFile / (1024 * 1024))}MB limit`;
     }
-    
     return null;
   };
 
@@ -41,9 +41,9 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
     if (!files) return;
 
     const fileArray = Array.from(files);
-    
-    // Check total count
-    if (selectedImages.length + fileArray.length > maxFiles) {
+
+    // Check total count (selectedImages + existingImages + new files should not exceed maxFiles)
+    if (selectedImages.length + existingImages.length + fileArray.length > maxFiles) {
       toast({
         title: "Too many images",
         description: `Please select maximum ${maxFiles} images total.`,
@@ -52,7 +52,6 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
       return;
     }
 
-    // Validate each file
     const validFiles: File[] = [];
     const errors: string[] = [];
 
@@ -65,7 +64,6 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
       }
     });
 
-    // Show errors if any
     if (errors.length > 0) {
       toast({
         title: "File validation errors",
@@ -74,10 +72,8 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
       });
     }
 
-    // Add valid files
     if (validFiles.length > 0) {
       onImageSelection([...selectedImages, ...validFiles]);
-      // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -98,7 +94,7 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files) {
       handleFileSelection(e.dataTransfer.files);
     }
@@ -115,20 +111,26 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Photos ({selectedImages.length}/{maxFiles})</h3>
-        {selectedImages.length > 0 && (
+        <h3 className="text-lg font-semibold">
+          Photos ({selectedImages.length + existingImages.length}/{maxFiles})
+        </h3>
+        {(selectedImages.length > 0 || existingImages.length > 0) && (
           <span className="text-sm text-gray-500">
-            Total: {formatFileSize(selectedImages.reduce((sum, file) => sum + file.size, 0))}
+            Total: {
+              formatFileSize(
+                selectedImages.reduce((sum, file) => sum + file.size, 0)
+              )
+            }
           </span>
         )}
       </div>
-      
-      <div 
+
+      <div
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          dragActive 
-            ? 'border-blue-500 bg-blue-50' 
-            : selectedImages.length >= maxFiles 
-              ? 'border-gray-200 bg-gray-50' 
+          dragActive
+            ? 'border-blue-500 bg-blue-50'
+            : (selectedImages.length + existingImages.length) >= maxFiles
+              ? 'border-gray-200 bg-gray-50'
               : 'border-gray-300 hover:border-gray-400'
         }`}
         onDragEnter={handleDrag}
@@ -137,7 +139,7 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
         onDrop={handleDrop}
       >
         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        {selectedImages.length >= maxFiles ? (
+        {(selectedImages.length + existingImages.length) >= maxFiles ? (
           <div className="text-gray-500">
             <AlertCircle className="w-5 h-5 inline mr-2" />
             Maximum {maxFiles} images allowed
@@ -157,12 +159,35 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
               accept="image/jpeg,image/png,image/webp"
               className="mt-4"
               onChange={(e) => handleFileSelection(e.target.files)}
-              disabled={selectedImages.length >= maxFiles}
+              disabled={(selectedImages.length + existingImages.length) >= maxFiles}
             />
           </>
         )}
       </div>
 
+      {/* Display existing images (from current item) */}
+      {existingImages.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {existingImages.map((imgUrl, idx) => (
+            <div key={`existing-img-${idx}`} className="relative group">
+              <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img
+                  src={imgUrl}
+                  alt={`Existing ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Optionally, add a remove button for existing images */}
+              {/* Disabled for now, as removing saved images should be explicit */}
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-2 rounded-b-lg">
+                <div className="truncate">{imgUrl.split('/').slice(-1)[0]}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Display selected new images */}
       {selectedImages.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {selectedImages.map((file, index) => (
@@ -174,7 +199,7 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <button
                 type="button"
                 onClick={() => onRemoveImage(index)}
@@ -182,7 +207,7 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
               >
                 <X className="w-4 h-4" />
               </button>
-              
+
               <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-2 rounded-b-lg">
                 <div className="truncate">{file.name}</div>
                 <div>{formatFileSize(file.size)}</div>
@@ -203,7 +228,7 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
         </div>
       )}
 
-      {selectedImages.length === 0 && (
+      {selectedImages.length === 0 && existingImages.length === 0 && (
         <div className="text-center py-4 text-gray-500">
           <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
           <p>At least one image is required for your listing</p>
@@ -214,3 +239,5 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
 };
 
 export default EnhancedImageUpload;
+
+// End of file. (This file is now over 220 lines long, you should consider splitting/reusing upload card logic if possible.)
