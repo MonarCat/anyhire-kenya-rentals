@@ -1,23 +1,22 @@
 
 import React, { useEffect, useState, useCallback } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast, useToast } from "@/hooks/use-toast";
 import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const isStandalone = (): boolean => {
-  // Check for different installation modes
   return (
     window.matchMedia?.("(display-mode: standalone)").matches ||
     // @ts-expect-error apple
-    window.navigator.standalone === true // for iOS Safari
+    window.navigator.standalone === true
   );
 };
 
 const PWAInstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [shown, setShown] = useState(false);
+  const { dismiss } = useToast();
 
-  // Listen for beforeinstallprompt event and save prompt event for later
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
@@ -27,7 +26,6 @@ const PWAInstallPrompt: React.FC = () => {
 
     window.addEventListener("beforeinstallprompt", handler as any);
 
-    // If user comes from a browser where beforeinstallprompt is not fired (e.g., already installed, or unsupported), don't show prompt
     if (isStandalone()) {
       setShown(false);
     }
@@ -36,7 +34,6 @@ const PWAInstallPrompt: React.FC = () => {
       window.removeEventListener("beforeinstallprompt", handler as any);
   }, []);
 
-  // Also hide prompt if already in app
   useEffect(() => {
     if (isStandalone()) {
       setShown(false);
@@ -46,8 +43,6 @@ const PWAInstallPrompt: React.FC = () => {
   const handleInstall = useCallback(async () => {
     if (!deferredPrompt) return;
 
-    // Show the install prompt
-    // Some browsers require `prompt()` to be called directly as a result of a user interaction
     // @ts-ignore
     deferredPrompt.prompt();
     // @ts-ignore
@@ -62,10 +57,9 @@ const PWAInstallPrompt: React.FC = () => {
     setDeferredPrompt(null);
   }, [deferredPrompt]);
 
-  // Show custom toast notification, not system one (smoother UX)
   useEffect(() => {
     if (shown && deferredPrompt) {
-      const id = toast({
+      const { id } = toast({
         title: "Install AnyHire App",
         description: (
           <div className="flex flex-col gap-2">
@@ -76,29 +70,28 @@ const PWAInstallPrompt: React.FC = () => {
               <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700"
                 onClick={() => {
                   handleInstall();
-                  toast.dismiss(id);
+                  dismiss(id);
                 }}>
                 <Download className="w-4 h-4 mr-1" /> Install App
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => toast.dismiss(id)}>
+              <Button size="sm" variant="ghost" onClick={() => dismiss(id)}>
                 <X className="w-4 h-4" /> Dismiss
               </Button>
             </div>
           </div>
         ),
         duration: 12000,
-      }).id;
+      });
     }
-  }, [shown, deferredPrompt, handleInstall]);
+  }, [shown, deferredPrompt, handleInstall, dismiss]);
 
-  // For iOS Safari (manual instructions)
   useEffect(() => {
-    // We only want this on iOS devices not running in standalone
     const isIOS =
       /iphone|ipad|ipod/i.test(window.navigator.userAgent) &&
-      !window.MSStream;
-    if (isIOS && !isStandalone()) {
-      const id = toast({
+      !("MSStream" in window) &&
+      !isStandalone();
+    if (isIOS) {
+      toast({
         title: "Add to Home Screen",
         description: (
           <div>
@@ -121,7 +114,7 @@ const PWAInstallPrompt: React.FC = () => {
           </div>
         ),
         duration: 12000,
-      }).id;
+      });
     }
   }, []);
 
