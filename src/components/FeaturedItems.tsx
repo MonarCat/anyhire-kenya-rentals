@@ -48,7 +48,11 @@ const FeaturedItems = () => {
           ad_type,
           rating,
           user_id,
-          category_id
+          category_id,
+          profiles:user_id (
+            full_name,
+            avatar_url
+          )
         `
         )
         .eq("is_available", true)
@@ -174,6 +178,19 @@ const FeaturedItems = () => {
                       <Badge variant="secondary" className="text-xs capitalize">
                         {item.condition}
                       </Badge>
+                      {/* Show lister's avatar and name*/}
+                      {item.profiles?.avatar_url && (
+                        <span className="flex items-center gap-1 ml-2">
+                          <img 
+                            src={item.profiles.avatar_url}
+                            alt={item.profiles.full_name || 'User'}
+                            className="w-6 h-6 rounded-full object-cover border"
+                          />
+                          <span className="text-xs text-gray-500">
+                            {item.profiles.full_name || 'User'}
+                          </span>
+                        </span>
+                      )}
                     </div>
                   </div>
                 </CardContent>

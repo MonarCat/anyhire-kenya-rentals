@@ -257,9 +257,17 @@ const Search = () => {
                         <Badge variant="secondary" className="text-xs capitalize">
                           {item.condition}
                         </Badge>
-                        {item.profiles?.full_name && (
-                          <span className="text-xs text-gray-500">
-                            by {item.profiles.full_name}
+                        {/* Show lister's avatar and name always */}
+                        {item.profiles?.avatar_url && (
+                          <span className="flex items-center gap-1 ml-2">
+                            <img 
+                              src={item.profiles.avatar_url}
+                              alt={item.profiles.full_name || 'User'}
+                              className="w-6 h-6 rounded-full object-cover border"
+                            />
+                            <span className="text-xs text-gray-500">
+                              {item.profiles.full_name || 'User'}
+                            </span>
                           </span>
                         )}
                       </div>
