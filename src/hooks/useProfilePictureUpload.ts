@@ -14,85 +14,88 @@ export function useProfilePictureUpload(
   const [imageError, setImageError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-
   const { uploadImage, deleteImage } = useImageUpload();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  /** Utility: Crop the image file to a 600x600px max square/jpg before upload */
+  const processImage = async (file: File) => {
+    try {
+      // Crop to square in browser
+      const croppedFile = await cropImageToSquare(file);
+      // Optionally: resize further here if desired
+      return croppedFile;
+    } catch (err) {
+      toast({
+        title: "Image error",
+        description: "Failed to process/crop image. Use another image.",
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    setImageError(false);
     const file = event.target.files?.[0];
+
+    // Reset the ref so the same file can be re-selected again later
+    if (event.target) {
+      event.target.value = "";
+    }
+
     if (!file || !user) return;
 
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
+        title: "Invalid file",
+        description: "Please select a valid image.",
         variant: "destructive",
       });
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Please select an image smaller than 5MB.",
+        description: "Pick an image smaller than 5MB.",
         variant: "destructive",
       });
       return;
     }
-
     setIsUploading(true);
-    setImageError(false);
 
     try {
-      const croppedFile = await cropImageToSquare(file);
-
-      // Local preview
+      // Crop
+      const croppedFile = await processImage(file);
+      // For preview, show user their image right away
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
-      };
+      reader.onload = (e) => setPreviewUrl(e.target?.result as string);
       reader.readAsDataURL(croppedFile);
 
-      // Upload cropped image
+      // Upload (to 'profile-pictures' bucket!)
       const uploadResult = await uploadImage(croppedFile, "profile-pictures");
       if (uploadResult?.publicUrl) {
+        // Set for gallery
         onImageChange(uploadResult.publicUrl);
+        setPreviewUrl(null);
         toast({
           title: "Success!",
-          description: "Profile picture updated successfully.",
+          description: "Profile picture updated.",
         });
       } else {
-        throw new Error("Failed to get image URL");
+        throw new Error("Upload failed");
       }
     } catch (error) {
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload profile picture. Please try again.",
-        variant: "destructive",
-      });
       setPreviewUrl(null);
       setImageError(true);
+      // Toast shown in catch above
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      if (cameraInputRef.current) cameraInputRef.current.value = "";
     }
   };
 
-  const handleCameraCapture = () => {
-    if (cameraInputRef.current) {
-      cameraInputRef.current.click();
-    }
-  };
-
-  const handleGalleryUpload = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
+  const handleCameraCapture = () => cameraInputRef.current?.click();
+  const handleGalleryUpload = () => fileInputRef.current?.click();
 
   const handleRemoveImage = async () => {
     if (!currentImageUrl) return;
@@ -102,20 +105,16 @@ export function useProfilePictureUpload(
       setPreviewUrl(null);
       setImageError(false);
       toast({
-        title: "Success!",
+        title: "Picture removed",
         description: "Profile picture removed.",
       });
     } catch (error) {
       toast({
         title: "Remove failed",
-        description: "Failed to remove profile picture. Please try again.",
+        description: "Failed to remove profile picture.",
         variant: "destructive",
       });
     }
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
   };
 
   const displayImageUrl = previewUrl || currentImageUrl;
@@ -125,13 +124,10 @@ export function useProfilePictureUpload(
     cameraInputRef,
     isUploading,
     imageError,
-    previewUrl,
     displayImageUrl,
     handleFileSelect,
     handleCameraCapture,
     handleGalleryUpload,
     handleRemoveImage,
-    handleImageError,
-    setPreviewUrl,
   };
 }

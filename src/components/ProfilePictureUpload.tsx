@@ -5,39 +5,39 @@ import ProfileAvatar from "./ProfileAvatar";
 import { Camera, Upload } from "lucide-react";
 import { useProfilePictureUpload } from "@/hooks/useProfilePictureUpload";
 
-interface ProfilePictureUploadProps {
-  currentImageUrl?: string;
-  onImageChange: (imageUrl: string) => void;
-  className?: string;
-}
-
-const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
+// Make sure we have loading overlays and reset properly!
+const ProfilePictureUpload = ({
   currentImageUrl,
   onImageChange,
   className = "",
 }) => {
   const {
-    fileInputRef,
-    cameraInputRef,
     isUploading,
     imageError,
     displayImageUrl,
+    fileInputRef,
+    cameraInputRef,
     handleFileSelect,
     handleCameraCapture,
     handleGalleryUpload,
     handleRemoveImage,
-    handleImageError,
   } = useProfilePictureUpload(currentImageUrl, onImageChange);
 
   return (
     <div className={`flex flex-col items-center space-y-4 ${className}`}>
-      <ProfileAvatar
-        imageUrl={displayImageUrl}
-        isUploading={isUploading}
-        imageError={imageError}
-        onRemove={handleRemoveImage}
-      />
-
+      <div className="relative">
+        <ProfileAvatar
+          imageUrl={displayImageUrl}
+          isUploading={isUploading}
+          imageError={imageError}
+          onRemove={handleRemoveImage}
+        />
+        {isUploading && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full z-10">
+            <span className="text-white text-xs animate-pulse">Uploading...</span>
+          </div>
+        )}
+      </div>
       <div className="flex gap-2">
         <Button
           type="button"
@@ -49,7 +49,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           <Camera className="w-4 h-4 mr-2" />
           {isUploading ? "Uploading..." : "Camera"}
         </Button>
-
         <Button
           type="button"
           variant="outline"
@@ -61,7 +60,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           {isUploading ? "Uploading..." : "Gallery"}
         </Button>
       </div>
-
+      {/* File inputs */}
       <input
         ref={cameraInputRef}
         type="file"
@@ -70,7 +69,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         onChange={handleFileSelect}
         className="hidden"
       />
-
       <input
         ref={fileInputRef}
         type="file"
@@ -78,9 +76,8 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         onChange={handleFileSelect}
         className="hidden"
       />
-
       <p className="text-xs text-gray-500 text-center max-w-xs">
-        Take a photo or choose from gallery. Images will be auto-cropped to square before upload.
+        Take a photo or choose from gallery. Images must be cropped square before uploading. Max file size: 5MB.
       </p>
     </div>
   );
