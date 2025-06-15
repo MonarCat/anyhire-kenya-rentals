@@ -1,12 +1,12 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Eye, Plus, Trash2, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import EmptyState from "@/components/common/EmptyState";
 
 type UserListedItemsProps = {
   userItems: any[];
@@ -21,61 +21,68 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
   const handleDelete = async (itemId: string) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     setRemoving(itemId);
-    const { error } = await supabase.from("items").delete().eq("id", itemId);
-    if (error) {
-      toast({
-        title: "Delete Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+    
+    try {
+      const { error } = await supabase.from("items").delete().eq("id", itemId);
+      if (error) throw error;
+      
       toast({
         title: "Item Deleted",
-        description: "Your listing was deleted.",
+        description: "Your listing was deleted successfully.",
       });
+    } catch (error: any) {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete item.",
+        variant: "destructive",
+      });
+    } finally {
+      setRemoving(null);
     }
-    setRemoving(null);
   };
 
   const handlePromote = async (itemId: string) => {
     setPromoting(itemId);
-    const { error } = await supabase
-      .from("items")
-      .update({ is_featured: true, ad_type: "featured" })
-      .eq("id", itemId);
-    if (error) {
-      toast({
-        title: "Promotion Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+    
+    try {
+      const { error } = await supabase
+        .from("items")
+        .update({ is_featured: true, ad_type: "featured" })
+        .eq("id", itemId);
+        
+      if (error) throw error;
+      
       toast({
         title: "Item Promoted",
         description: "Your listing is now featured!",
       });
+    } catch (error: any) {
+      toast({
+        title: "Promotion Failed",
+        description: error.message || "Failed to promote item.",
+        variant: "destructive",
+      });
+    } finally {
+      setPromoting(null);
     }
-    setPromoting(null);
   };
 
   if (loading) {
-    return <div className="flex justify-center py-8">Loading...</div>;
+    return <div className="flex justify-center py-8">Loading your items...</div>;
   }
+
   if (userItems.length === 0) {
     return (
-      <div className="text-center py-8">
-        <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No items listed yet</h3>
-        <p className="text-gray-600 mb-4">Start earning by listing your first item for rent</p>
-        <Button asChild className="bg-blue-600 hover:bg-blue-700">
-          <Link to="/list-item">
-            <Plus className="w-4 h-4 mr-2" />
-            List Your First Item
-          </Link>
-        </Button>
-      </div>
+      <EmptyState
+        icon={<Package className="w-12 h-12" />}
+        title="No items listed yet"
+        description="Start earning by listing your first item for rent"
+        actionLabel="List Your First Item"
+        actionHref="/list-item"
+      />
     );
   }
+
   return (
     <div className="space-y-4">
       {userItems.map((listing) => (
@@ -97,7 +104,7 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold truncate">{listing.title}</h3>
             <p className="text-sm text-gray-600 whitespace-nowrap">
-              KES {(listing.price / 100).toLocaleString()}/{listing.price_period} • {listing.view_count} views • {listing.booking_count} bookings
+              KES {(listing.price / 100).toLocaleString()}/{listing.price_period} • {listing.view_count || 0} views • {listing.booking_count || 0} bookings
             </p>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant={listing.is_available ? "default" : "secondary"}>
@@ -122,7 +129,7 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
             <Button
               size="sm"
               variant="ghost"
-              className="text-red-600"
+              className="text-red-600 hover:text-red-700"
               onClick={() => handleDelete(listing.id)}
               disabled={removing === listing.id}
               title="Delete"
@@ -136,7 +143,7 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-yellow-600"
+                className="text-yellow-600 hover:text-yellow-700"
                 onClick={() => handlePromote(listing.id)}
                 disabled={promoting === listing.id}
                 title="Promote/Feature"
@@ -145,7 +152,6 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
                 {promoting === listing.id && (
                   <span className="ml-1 text-xs">Promoting...</span>
                 )}
-                <span className="sr-only">Feature</span>
               </Button>
             )}
           </div>
