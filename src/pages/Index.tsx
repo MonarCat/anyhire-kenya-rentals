@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, Shield, Clock, MapPin, ArrowRight, Star } from 'lucide-react';
@@ -8,6 +7,7 @@ import FeaturedItems from '@/components/FeaturedItems';
 import CategoryGrid from '@/components/CategoryGrid';
 import Layout from '@/components/Layout';
 import Seo from '@/components/Seo';
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const Index = () => {
   const features = [
@@ -33,6 +33,7 @@ const Index = () => {
 
   return (
     <>
+      <PWAInstallPrompt />
       <Seo
         title="AnyHire - Rent Anything in Kenya | Local Rentals & Listings"
         description="Kenya's trusted platform to rent and hire tools, electronics, cars, party gear & more. List your own items, browse by category, and find great deals nearby. Fast, safe, and mobile-friendly—join AnyHire and get started today."
