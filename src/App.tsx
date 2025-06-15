@@ -13,6 +13,7 @@ import Search from '@/pages/Search';
 import ItemDetails from '@/pages/ItemDetails';
 import ListItem from '@/pages/ListItem';
 import ImprovedListItem from '@/pages/ImprovedListItem';
+import EditItem from '@/pages/EditItem';
 import Profile from '@/pages/Profile';
 import Dashboard from '@/pages/Dashboard';
 import Messages from '@/pages/Messages';
@@ -63,6 +64,7 @@ function App() {
                   <Route path="/item/:id" element={<ItemDetails />} />
                   <Route path="/list-item" element={<ImprovedListItem />} />
                   <Route path="/list-item-basic" element={<ListItem />} />
+                  <Route path="/edit-item/:id" element={<EditItem />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/messages" element={<Messages />} />

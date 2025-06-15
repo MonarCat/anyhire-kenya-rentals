@@ -31,6 +31,7 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
         description: "Your listing was deleted successfully.",
       });
     } catch (error: any) {
+      console.error('Delete error:', error);
       toast({
         title: "Delete Failed",
         description: error.message || "Failed to delete item.",
@@ -57,6 +58,7 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
         description: "Your listing is now featured!",
       });
     } catch (error: any) {
+      console.error('Promotion error:', error);
       toast({
         title: "Promotion Failed",
         description: error.message || "Failed to promote item.",
@@ -85,78 +87,82 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
 
   return (
     <div className="space-y-4">
-      {userItems.map((listing) => (
-        <div
-          key={listing.id}
-          className={`flex items-center space-x-4 p-4 border rounded-lg transition-shadow hover:shadow-md ${
-            listing.is_featured ? "ring-2 ring-yellow-500/70" : ""
-          }`}
-        >
-          <img
-            src={
-              listing.images && listing.images.length > 0
-                ? listing.images[0]
-                : "/placeholder.svg"
-            }
-            alt={listing.title}
-            className="w-16 h-16 object-cover rounded"
-          />
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold truncate">{listing.title}</h3>
-            <p className="text-sm text-gray-600 whitespace-nowrap">
-              KES {(listing.price / 100).toLocaleString()}/{listing.price_period} • {listing.view_count || 0} views • {listing.booking_count || 0} bookings
-            </p>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant={listing.is_available ? "default" : "secondary"}>
-                {listing.is_available ? "Active" : "Inactive"}
-              </Badge>
-              {listing.is_featured && (
-                <Badge className="bg-yellow-500 text-black">Featured</Badge>
-              )}
+      {userItems.map((listing) => {
+        console.log('Rendering listing:', listing.id, listing.title);
+        
+        return (
+          <div
+            key={listing.id}
+            className={`flex items-center space-x-4 p-4 border rounded-lg transition-shadow hover:shadow-md ${
+              listing.is_featured ? "ring-2 ring-yellow-500/70" : ""
+            }`}
+          >
+            <img
+              src={
+                listing.images && listing.images.length > 0
+                  ? listing.images[0]
+                  : "/placeholder.svg"
+              }
+              alt={listing.title}
+              className="w-16 h-16 object-cover rounded"
+            />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold truncate">{listing.title}</h3>
+              <p className="text-sm text-gray-600 whitespace-nowrap">
+                KES {(listing.price / 100).toLocaleString()}/{listing.price_period} • {listing.view_count || 0} views • {listing.booking_count || 0} bookings
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant={listing.is_available ? "default" : "secondary"}>
+                  {listing.is_available ? "Active" : "Inactive"}
+                </Badge>
+                {listing.is_featured && (
+                  <Badge className="bg-yellow-500 text-black">Featured</Badge>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col md:flex-row gap-1 md:gap-2 items-center">
-            <Button size="sm" variant="ghost" asChild title="View">
-              <Link to={`/item/${listing.id}`}>
-                <Eye className="w-4 h-4" />
-              </Link>
-            </Button>
-            <Button size="sm" variant="ghost" asChild title="Edit">
-              <Link to={`/edit-item/${listing.id}`}>
-                <Edit className="w-4 h-4" />
-              </Link>
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-red-600 hover:text-red-700"
-              onClick={() => handleDelete(listing.id)}
-              disabled={removing === listing.id}
-              title="Delete"
-            >
-              <Trash2 className="w-4 h-4" />
-              {removing === listing.id && (
-                <span className="ml-1 text-xs">Deleting...</span>
-              )}
-            </Button>
-            {!listing.is_featured && (
+            <div className="flex flex-col md:flex-row gap-1 md:gap-2 items-center">
+              <Button size="sm" variant="ghost" asChild title="View">
+                <Link to={`/item/${listing.id}`}>
+                  <Eye className="w-4 h-4" />
+                </Link>
+              </Button>
+              <Button size="sm" variant="ghost" asChild title="Edit">
+                <Link to={`/edit-item/${listing.id}`}>
+                  <Edit className="w-4 h-4" />
+                </Link>
+              </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-yellow-600 hover:text-yellow-700"
-                onClick={() => handlePromote(listing.id)}
-                disabled={promoting === listing.id}
-                title="Promote/Feature"
+                className="text-red-600 hover:text-red-700"
+                onClick={() => handleDelete(listing.id)}
+                disabled={removing === listing.id}
+                title="Delete"
               >
-                <Plus className="w-4 h-4" />
-                {promoting === listing.id && (
-                  <span className="ml-1 text-xs">Promoting...</span>
+                <Trash2 className="w-4 h-4" />
+                {removing === listing.id && (
+                  <span className="ml-1 text-xs">Deleting...</span>
                 )}
               </Button>
-            )}
+              {!listing.is_featured && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-yellow-600 hover:text-yellow-700"
+                  onClick={() => handlePromote(listing.id)}
+                  disabled={promoting === listing.id}
+                  title="Promote/Feature"
+                >
+                  <Plus className="w-4 h-4" />
+                  {promoting === listing.id && (
+                    <span className="ml-1 text-xs">Promoting...</span>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
