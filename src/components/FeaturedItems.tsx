@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,13 +26,13 @@ const FeaturedItems = () => {
 
   useEffect(() => {
     fetchFeaturedItems();
-    // Option: For real-time, subscribe to changes here
   }, []);
 
   const fetchFeaturedItems = async () => {
     try {
       setLoading(true);
       setError(null);
+      // Fetch featured AND newest listed items (always include recents)
       const { data, error } = await supabase
         .from("items")
         .select(
@@ -46,6 +45,8 @@ const FeaturedItems = () => {
           condition,
           images,
           ad_type,
+          is_featured,
+          created_at,
           rating,
           user_id,
           category_id,
@@ -55,13 +56,13 @@ const FeaturedItems = () => {
           )
         `
         )
+        .or("is_featured.eq.true,created_at.gte." + new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString()) // last 7 days or featured
         .eq("is_available", true)
+        .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(MAX_FEATURED);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       const transformed =
         Array.isArray(data) && data.length > 0
           ? data.map((item) => ({
