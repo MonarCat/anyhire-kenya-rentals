@@ -20,17 +20,17 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   onAction
 }) => {
   return (
-    <div className="text-center py-8">
-      <div className="w-12 h-12 text-gray-400 mx-auto mb-4">
+    <div className="text-center py-12 px-6">
+      <div className="w-16 h-16 text-gray-300 mx-auto mb-6 p-4 bg-gray-50 rounded-full">
         {icon}
       </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600 mb-4">{description}</p>
+      <h3 className="text-xl font-semibold mb-3 text-gray-800">{title}</h3>
+      <p className="text-gray-600 mb-6 max-w-md mx-auto leading-relaxed">{description}</p>
       {(actionLabel && (actionHref || onAction)) && (
         <Button 
           asChild={!!actionHref}
           onClick={onAction}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
         >
           {actionHref ? (
             <a href={actionHref}>{actionLabel}</a>
