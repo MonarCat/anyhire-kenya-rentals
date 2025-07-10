@@ -50,7 +50,7 @@ export const useRealtimeItems = () => {
 
     fetchUserItems();
 
-    // Set up real-time subscription
+    // Set up real-time subscription with improved error handling
     const channel = supabase
       .channel('user-items-changes')
       .on(
@@ -61,12 +61,28 @@ export const useRealtimeItems = () => {
           table: 'items',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        async (payload) => {
           console.log('Item change detected:', payload);
           
           if (payload.eventType === 'INSERT') {
-            console.log('Adding new item:', payload.new);
-            setUserItems(prev => [payload.new as any, ...prev]);
+            // Fetch the complete item with category info
+            const { data: newItem } = await supabase
+              .from('items')
+              .select(`
+                *,
+                categories!inner (
+                  id,
+                  name,
+                  icon
+                )
+              `)
+              .eq('id', payload.new.id)
+              .single();
+              
+            if (newItem) {
+              console.log('Adding new item:', newItem);
+              setUserItems(prev => [newItem, ...prev]);
+            }
           } else if (payload.eventType === 'UPDATE') {
             console.log('Updating item:', payload.new);
             setUserItems(prev => 
@@ -82,7 +98,9 @@ export const useRealtimeItems = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
     return () => {
       console.log('Cleaning up realtime subscription');

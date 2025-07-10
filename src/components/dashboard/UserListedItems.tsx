@@ -70,7 +70,12 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
   };
 
   if (loading) {
-    return <div className="flex justify-center py-8">Loading your items...</div>;
+    return (
+      <div className="flex justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2 text-muted-foreground">Loading your items...</span>
+      </div>
+    );
   }
 
   if (userItems.length === 0) {
@@ -108,7 +113,7 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
             />
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold truncate">{listing.title}</h3>
-              <p className="text-sm text-gray-600 whitespace-nowrap">
+              <p className="text-sm text-muted-foreground">
                 KES {(listing.price / 100).toLocaleString()}/{listing.price_period} • {listing.view_count || 0} views • {listing.booking_count || 0} bookings
               </p>
               <div className="flex items-center gap-2 mt-1">
@@ -117,6 +122,11 @@ const UserListedItems: React.FC<UserListedItemsProps> = ({ userItems, loading })
                 </Badge>
                 {listing.is_featured && (
                   <Badge className="bg-yellow-500 text-black">Featured</Badge>
+                )}
+                {listing.categories && (
+                  <Badge variant="outline" className="text-xs">
+                    {listing.categories.name}
+                  </Badge>
                 )}
               </div>
             </div>

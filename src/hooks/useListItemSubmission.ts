@@ -12,7 +12,7 @@ import { getAdTypeFromPlan } from '@/utils/subscriptionUtils';
 export const useListItemSubmission = (categories: any[]) => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
-  const { currentPlan } = useSubscription();
+  const { currentPlan, canCreateMore, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { uploadImages, uploading } = useImageUpload();
@@ -31,6 +31,16 @@ export const useListItemSubmission = (categories: any[]) => {
       toast({
         title: "Authentication Required",
         description: "Please log in to list an item.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check subscription limits
+    if (!canCreateMore) {
+      toast({
+        title: "Listing Limit Reached",
+        description: `You've reached your plan limit of ${currentPlan?.item_limit} items. Please upgrade your subscription.`,
         variant: "destructive",
       });
       return;
@@ -107,6 +117,9 @@ export const useListItemSubmission = (categories: any[]) => {
       }
 
       console.log('Item created successfully:', newItem);
+
+      // Refresh subscription data to update item count
+      await refreshSubscription();
 
       toast({
         title: "Success!",
