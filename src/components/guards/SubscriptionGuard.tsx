@@ -15,7 +15,7 @@ const SubscriptionGuard: React.FC = () => {
         <CardHeader className="text-center">
           <CardTitle>Listing Limit Reached</CardTitle>
           <CardDescription>
-            You've reached your limit of {currentPlan.itemLimit} items for the {currentPlan.name} plan.
+            You've reached your limit of {currentPlan?.itemLimit || 0} items for the {currentPlan?.name || 'current'} plan.
           </CardDescription>
         </CardHeader>
         <CardContent>

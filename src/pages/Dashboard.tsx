@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Eye, Edit, Trash2, TrendingUp, DollarSign, Package, Users } from 'lucide-react';
@@ -14,7 +15,7 @@ import UserListedItems from "@/components/dashboard/UserListedItems";
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
-  const { currentPlan, userItemCount } = useSubscription();
+  const { currentPlan, itemCount } = useSubscription();
   const { userItems, loading } = useRealtimeItems();
 
   if (!user) {
@@ -57,7 +58,7 @@ const Dashboard = () => {
         </div>
 
         {/* Subscription Status and Stats */}
-        <DashboardStats currentPlan={currentPlan} userItemCount={userItemCount} />
+        <DashboardStats currentPlan={currentPlan} userItemCount={itemCount} />
 
         {/* Listings: Real only, edit options */}
         <Tabs defaultValue="listings" className="space-y-4">

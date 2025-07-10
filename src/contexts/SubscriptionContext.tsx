@@ -2,21 +2,20 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
 
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  price: number;
-  item_limit: number | null;
-  features: string[];
-  ad_type: string;
-}
+type SubscriptionPlan = Tables<'subscription_plans'> & {
+  itemLimit: number | null; // Add computed property for consistency
+};
 
 interface SubscriptionContextType {
   currentPlan: SubscriptionPlan | null;
+  plans: SubscriptionPlan[];
   loading: boolean;
   itemCount: number;
+  userItemCount: number;
   canCreateMore: boolean;
+  canListMoreItems: boolean;
   refreshSubscription: () => Promise<void>;
 }
 
@@ -32,9 +31,36 @@ export const useSubscription = () => {
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [itemCount, setItemCount] = useState(0);
   const { user } = useAuth();
+
+  const transformPlan = (plan: Tables<'subscription_plans'>): SubscriptionPlan => ({
+    ...plan,
+    itemLimit: plan.item_limit,
+    features: Array.isArray(plan.features) ? plan.features as string[] : []
+  });
+
+  const fetchPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) {
+        console.error('Error fetching plans:', error);
+        return;
+      }
+
+      const transformedPlans = data?.map(transformPlan) || [];
+      setPlans(transformedPlans);
+    } catch (error) {
+      console.error('Error in fetchPlans:', error);
+    }
+  };
 
   const fetchSubscription = async () => {
     if (!user) {
@@ -54,9 +80,9 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         `)
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
-      if (subError && subError.code !== 'PGRST116') {
+      if (subError) {
         console.error('Error fetching subscription:', subError);
         // If no subscription found, assign basic plan
         const { data: basicPlan } = await supabase
@@ -65,9 +91,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
           .eq('id', 'basic')
           .single();
           
-        setCurrentPlan(basicPlan);
-      } else if (subscription) {
-        setCurrentPlan(subscription.subscription_plans);
+        if (basicPlan) {
+          setCurrentPlan(transformPlan(basicPlan));
+        }
+      } else if (subscription?.subscription_plans) {
+        setCurrentPlan(transformPlan(subscription.subscription_plans));
       }
 
       // Fetch user's item count
@@ -89,6 +117,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   useEffect(() => {
+    fetchPlans();
     fetchSubscription();
   }, [user]);
 
@@ -104,9 +133,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   return (
     <SubscriptionContext.Provider value={{
       currentPlan,
+      plans,
       loading,
       itemCount,
+      userItemCount: itemCount,
       canCreateMore,
+      canListMoreItems: canCreateMore,
       refreshSubscription
     }}>
       {children}

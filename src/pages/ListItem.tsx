@@ -12,14 +12,14 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 const ListItem = () => {
   const { user } = useAuth();
-  const { canListMoreItems } = useSubscription();
+  const { canCreateMore } = useSubscription();
   const { categories, loading } = useCategories();
 
   if (!user) {
     return <AuthGuard />;
   }
 
-  if (!canListMoreItems) {
+  if (!canCreateMore) {
     return <SubscriptionGuard />;
   }
 

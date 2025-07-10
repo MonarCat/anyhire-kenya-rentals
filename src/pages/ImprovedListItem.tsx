@@ -14,14 +14,14 @@ import { CheckCircle, AlertCircle } from 'lucide-react';
 
 const ImprovedListItem = () => {
   const { user } = useAuth();
-  const { canListMoreItems } = useSubscription();
+  const { canCreateMore } = useSubscription();
   const { categories, loading, error } = useCategories();
 
   if (!user) {
     return <AuthGuard />;
   }
 
-  if (!canListMoreItems) {
+  if (!canCreateMore) {
     return <SubscriptionGuard />;
   }
 

@@ -83,7 +83,7 @@ const Pricing = () => {
                   {plan.price === 0 ? 'Free' : `KES ${plan.price.toLocaleString()}/month`}
                 </CardDescription>
                 <div className="text-3xl font-bold text-green-600">
-                  {plan.itemLimit === Infinity ? '∞' : plan.itemLimit}
+                  {plan.itemLimit === null ? '∞' : plan.itemLimit}
                   <span className="text-sm text-gray-600 font-normal"> items</span>
                 </div>
               </CardHeader>
@@ -111,7 +111,7 @@ const Pricing = () => {
                 ) : (
                   <PaymentButton
                     amount={plan.price}
-                    description={`${plan.name} Subscription Plan - ${plan.itemLimit === Infinity ? 'Unlimited' : plan.itemLimit} items`}
+                    description={`${plan.name} Subscription Plan - ${plan.itemLimit === null ? 'Unlimited' : plan.itemLimit} items`}
                     paymentType="subscription"
                     planId={plan.id}
                     onSuccess={handlePaymentSuccess}
