@@ -74,7 +74,7 @@ function App() {
                   <Route path="/cookies" element={<CookiePolicy />} />
                   <Route path="/safety" element={<SafetyTips />} />
                   <Route path="/rental-agreement" element={<RentalAgreement />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/reset-password" element={<ResetPassword />} />
                   <Route path="/payment/callback" element={<PaymentCallback />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

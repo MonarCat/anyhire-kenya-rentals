@@ -12,28 +12,60 @@ const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isValidLink, setIsValidLink] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have the required tokens
+    // Check if we have the required tokens for password reset
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
+    const type = searchParams.get('type');
     
-    if (!accessToken || !refreshToken) {
+    console.log('Reset password params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+
+    if (type === 'recovery' && accessToken && refreshToken) {
+      setIsValidLink(true);
+      // Set the session with the tokens from the URL
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+    } else {
       toast({
         title: "Invalid reset link",
-        description: "This password reset link is invalid or has expired.",
+        description: "This password reset link is invalid or has expired. Please request a new one.",
         variant: "destructive",
       });
-      navigate('/auth');
+      // Redirect to auth page after a delay
+      setTimeout(() => {
+        navigate('/auth');
+      }, 3000);
     }
   }, [searchParams, navigate, toast]);
 
   const handlePasswordUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    if (!isValidLink) {
+      toast({
+        title: "Error",
+        description: "Invalid reset link. Please request a new password reset.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validation
+    if (!password || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (password !== confirmPassword) {
       toast({
@@ -41,7 +73,6 @@ const ResetPassword = () => {
         description: "Passwords do not match.",
         variant: "destructive",
       });
-      setIsLoading(false);
       return;
     }
 
@@ -51,9 +82,10 @@ const ResetPassword = () => {
         description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
-      setIsLoading(false);
       return;
     }
+
+    setIsLoading(true);
 
     try {
       const { error } = await supabase.auth.updateUser({
@@ -65,12 +97,16 @@ const ResetPassword = () => {
       }
 
       toast({
-        title: "Password updated!",
-        description: "Your password has been successfully updated.",
+        title: "Password updated successfully!",
+        description: "Your password has been updated. You can now sign in with your new password.",
       });
       
-      navigate('/');
+      // Redirect to dashboard or home page
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
     } catch (error: any) {
+      console.error('Password update error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update password. Please try again.",
@@ -80,6 +116,31 @@ const ResetPassword = () => {
       setIsLoading(false);
     }
   };
+
+  if (!isValidLink) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+        <div className="max-w-md w-full">
+          <Card>
+            <CardHeader>
+              <CardTitle>Invalid Reset Link</CardTitle>
+              <CardDescription>
+                This password reset link is invalid or has expired.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Redirecting you to the sign in page...
+              </p>
+              <Button asChild className="w-full">
+                <a href="/auth">Go to Sign In</a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
@@ -103,6 +164,7 @@ const ResetPassword = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={6}
                   required
+                  disabled={isLoading}
                 />
                 <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
               </div>
@@ -116,6 +178,7 @@ const ResetPassword = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   minLength={6}
                   required
+                  disabled={isLoading}
                 />
               </div>
               <Button 
