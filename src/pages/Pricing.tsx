@@ -65,61 +65,66 @@ const Pricing = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
-          {plans.map((plan) => (
-            <Card key={plan.id} className={`relative ${currentPlan?.id === plan.id ? 'ring-2 ring-green-500' : ''}`}>
-              <CardHeader className="text-center">
-                {plan.id === 'silver' && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600">
-                    Most Popular
-                  </Badge>
-                )}
-                {currentPlan?.id === plan.id && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600">
-                    Current Plan
-                  </Badge>
-                )}
-                <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                <CardDescription>
-                  {plan.price === 0 ? 'Free' : `KES ${plan.price.toLocaleString()}/month`}
-                </CardDescription>
-                <div className="text-3xl font-bold text-green-600">
-                  {plan.itemLimit === null ? '∞' : plan.itemLimit}
-                  <span className="text-sm text-gray-600 font-normal"> items</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-6">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                {currentPlan?.id === plan.id ? (
-                  <Button className="w-full" variant="outline" disabled>
-                    Current Plan
-                  </Button>
-                ) : plan.price === 0 ? (
-                  <Button 
-                    className="w-full" 
-                    onClick={() => handleFreeUpgrade(plan.id)}
-                  >
-                    Get Started
-                  </Button>
-                ) : (
-                  <PaymentButton
-                    amount={plan.price}
-                    description={`${plan.name} Subscription Plan - ${plan.itemLimit === null ? 'Unlimited' : plan.itemLimit} items`}
-                    paymentType="subscription"
-                    planId={plan.id}
-                    onSuccess={handlePaymentSuccess}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {plans.map((plan) => {
+            // Safely handle features as an array
+            const features = Array.isArray(plan.features) ? plan.features : [];
+            
+            return (
+              <Card key={plan.id} className={`relative ${currentPlan?.id === plan.id ? 'ring-2 ring-green-500' : ''}`}>
+                <CardHeader className="text-center">
+                  {plan.id === 'silver' && (
+                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600">
+                      Most Popular
+                    </Badge>
+                  )}
+                  {currentPlan?.id === plan.id && (
+                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600">
+                      Current Plan
+                    </Badge>
+                  )}
+                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <CardDescription>
+                    {plan.price === 0 ? 'Free' : `KES ${plan.price.toLocaleString()}/month`}
+                  </CardDescription>
+                  <div className="text-3xl font-bold text-green-600">
+                    {plan.item_limit === null ? '∞' : plan.item_limit}
+                    <span className="text-sm text-gray-600 font-normal"> items</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3 mb-6">
+                    {features.map((feature, index) => (
+                      <li key={index} className="flex items-start">
+                        <Check className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  {currentPlan?.id === plan.id ? (
+                    <Button className="w-full" variant="outline" disabled>
+                      Current Plan
+                    </Button>
+                  ) : plan.price === 0 ? (
+                    <Button 
+                      className="w-full" 
+                      onClick={() => handleFreeUpgrade(plan.id)}
+                    >
+                      Get Started
+                    </Button>
+                  ) : (
+                    <PaymentButton
+                      amount={plan.price}
+                      description={`${plan.name} Subscription Plan - ${plan.item_limit === null ? 'Unlimited' : plan.item_limit} items`}
+                      paymentType="subscription"
+                      planId={plan.id}
+                      onSuccess={handlePaymentSuccess}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         <div className="mt-12 text-center">
