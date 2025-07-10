@@ -66,8 +66,10 @@ const Pricing = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
           {plans.map((plan) => {
-            // Safely handle features as an array
-            const features = Array.isArray(plan.features) ? plan.features : [];
+            // Safely handle features as an array of strings
+            const features = Array.isArray(plan.features) 
+              ? plan.features.map(f => typeof f === 'string' ? f : String(f))
+              : [];
             
             return (
               <Card key={plan.id} className={`relative ${currentPlan?.id === plan.id ? 'ring-2 ring-green-500' : ''}`}>
