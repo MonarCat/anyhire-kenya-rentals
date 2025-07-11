@@ -7,9 +7,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Rate limiting map to prevent callback abuse
+const callbackCounts = new Map<string, { count: number, resetTime: number }>();
+const MAX_CALLBACKS_PER_MINUTE = 10;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = callbackCounts.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    callbackCounts.set(ip, { count: 1, resetTime: now + 60000 });
+    return false;
+  }
+  
+  if (record.count >= MAX_CALLBACKS_PER_MINUTE) {
+    return true;
+  }
+  
+  record.count++;
+  return false;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  const clientIP = req.headers.get('cf-connecting-ip') || 
+                   req.headers.get('x-forwarded-for') || 
+                   'unknown';
+
+  // Rate limiting
+  if (isRateLimited(clientIP)) {
+    console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response('Rate limit exceeded', { status: 429, headers: corsHeaders });
   }
 
   try {
@@ -33,6 +64,11 @@ serve(async (req) => {
       throw new Error('Missing CheckoutRequestID')
     }
 
+    // Additional validation
+    if (typeof resultCode !== 'number' && typeof resultCode !== 'string') {
+      throw new Error('Invalid result code format')
+    }
+
     // Find transaction by checkout request ID
     const { data: transaction, error: findError } = await supabaseClient
       .from('transactions')
@@ -41,13 +77,23 @@ serve(async (req) => {
       .single()
 
     if (findError || !transaction) {
+      console.error(`Transaction not found for checkout request ID: ${checkoutRequestId}`)
       throw new Error(`Transaction not found for checkout request ID: ${checkoutRequestId}`)
+    }
+
+    // Prevent duplicate processing
+    if (transaction.status !== 'pending') {
+      console.log(`Transaction ${transaction.id} already processed with status: ${transaction.status}`);
+      return new Response(
+        JSON.stringify({ success: true, message: 'Already processed' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
     }
 
     let newStatus = 'pending'
     let mpesaReceiptNumber = null
 
-    if (resultCode === 0) {
+    if (resultCode === 0 || resultCode === '0') {
       // Payment successful
       newStatus = 'completed'
       
@@ -55,6 +101,15 @@ serve(async (req) => {
       const callbackMetadata = stkCallback.CallbackMetadata?.Item || []
       const receiptItem = callbackMetadata.find((item: any) => item.Name === 'MpesaReceiptNumber')
       mpesaReceiptNumber = receiptItem?.Value || null
+
+      // Additional validation for successful payments
+      const amountItem = callbackMetadata.find((item: any) => item.Name === 'Amount')
+      const transactionAmount = amountItem?.Value;
+      
+      if (transactionAmount && Math.abs(Number(transactionAmount) - (transaction.amount / 100)) > 0.01) {
+        console.error(`Amount mismatch: Expected ${transaction.amount/100}, got ${transactionAmount}`);
+        newStatus = 'failed';
+      }
     } else {
       // Payment failed or cancelled
       newStatus = 'failed'
@@ -72,8 +127,22 @@ serve(async (req) => {
       .eq('id', transaction.id)
 
     if (updateError) {
+      console.error('Failed to update transaction:', updateError)
       throw new Error(`Failed to update transaction: ${updateError.message}`)
     }
+
+    // Log security event
+    await supabaseClient.rpc('log_security_event', {
+      p_action: newStatus === 'completed' ? 'PAYMENT_COMPLETED' : 'PAYMENT_FAILED',
+      p_resource_type: 'transaction',
+      p_resource_id: transaction.id,
+      p_details: {
+        checkout_request_id: checkoutRequestId,
+        result_code: resultCode,
+        receipt_number: mpesaReceiptNumber,
+        amount: transaction.amount
+      }
+    }).catch(err => console.error('Failed to log security event:', err));
 
     // If payment completed, handle subscription or booking activation
     if (newStatus === 'completed') {
@@ -121,7 +190,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('M-Pesa callback error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Callback processing failed' }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
