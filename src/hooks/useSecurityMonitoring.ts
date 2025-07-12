@@ -17,7 +17,7 @@ export const useSecurityMonitoring = () => {
     if (!user) return;
 
     try {
-      await supabase.rpc('log_security_event', {
+      await (supabase.rpc as any)('log_security_event', {
         p_action: event.action,
         p_resource_type: event.resource_type,
         p_resource_id: event.resource_id || null,
