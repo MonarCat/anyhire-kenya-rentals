@@ -124,10 +124,10 @@ const FeaturedItems = () => {
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600 mb-4">{error}</p>
-        <div className="flex justify-center gap-4">
-          <Button onClick={fetchFeaturedItems} variant="outline">
+      <div className="text-center py-8 px-4">
+        <p className="text-red-600 mb-4 text-sm sm:text-base">{error}</p>
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+          <Button onClick={fetchFeaturedItems} variant="outline" size="sm" className="min-h-[44px]">
             <RefreshCw className="w-4 h-4 mr-2" />
             Try Again
           </Button>
@@ -139,12 +139,12 @@ const FeaturedItems = () => {
 
   if (!items.length) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-600 mb-4">
+      <div className="text-center py-8 px-4">
+        <p className="text-gray-600 mb-4 text-sm sm:text-base">
           No featured items available at the moment.
         </p>
-        <div className="flex justify-center gap-4">
-          <Button onClick={fetchFeaturedItems} variant="outline">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+          <Button onClick={fetchFeaturedItems} variant="outline" size="sm" className="min-h-[44px]">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
@@ -156,14 +156,14 @@ const FeaturedItems = () => {
 
   return (
     <Carousel
-      opts={{ align: "start" }}
+      opts={{ align: "start", loop: false, dragFree: true }}
       className="w-full max-w-6xl mx-auto relative"
     >
-      <CarouselContent>
+      <CarouselContent className="-ml-2 md:-ml-4">
         {items.map((item) => (
           <CarouselItem
             key={item.id}
-            className="basis-4/5 md:basis-1/2 lg:basis-1/3"
+            className="pl-2 md:pl-4 basis-[85%] sm:basis-[70%] md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
           >
             <FeaturedItemCard
               item={item}
@@ -173,8 +173,8 @@ const FeaturedItems = () => {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <CarouselPrevious className="hidden md:flex" />
+      <CarouselNext className="hidden md:flex" />
     </Carousel>
   );
 };

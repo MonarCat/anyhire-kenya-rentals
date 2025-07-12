@@ -56,33 +56,33 @@ const CategoryGrid = () => {
 
   return (
     <Carousel
-      opts={{ align: "start" }}
+      opts={{ align: "start", loop: false, dragFree: true }}
       className="w-full max-w-6xl mx-auto relative"
     >
-      <CarouselContent>
+      <CarouselContent className="-ml-2 md:-ml-4">
         {categories.map((category) => (
-          <CarouselItem key={category.id} className="basis-2/3 md:basis-1/4 lg:basis-1/6">
+          <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
             <Link
               to={`/search?category=${encodeURIComponent(category.name)}`}
               className="block h-full"
             >
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
-                <CardContent className="p-6 text-center flex flex-col items-center h-full">
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group h-full active:scale-95 hover:scale-105">
+                <CardContent className="p-3 md:p-6 text-center flex flex-col items-center h-full min-h-[120px] justify-center">
                   {category.image_url ? (
                     <img
                       src={category.image_url}
                       alt={category.name}
-                      className="mx-auto mb-2 w-16 h-16 object-cover rounded-full border bg-gray-100"
+                      className="mx-auto mb-2 w-12 h-12 md:w-16 md:h-16 object-cover rounded-full border bg-gray-100 group-hover:scale-110 transition-transform"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
                       }}
                     />
                   ) : (
-                    <div className="text-4xl mb-2">{category.icon || "📦"}</div>
+                    <div className="text-2xl md:text-4xl mb-2 group-hover:scale-110 transition-transform">{category.icon || "📦"}</div>
                   )}
-                  <h3 className="font-semibold text-sm">{category.name}</h3>
+                  <h3 className="font-semibold text-xs md:text-sm leading-tight">{category.name}</h3>
                   {category.description && (
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-gray-600 mt-1 line-clamp-2 hidden sm:block">
                       {category.description}
                     </p>
                   )}
@@ -92,8 +92,8 @@ const CategoryGrid = () => {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <CarouselPrevious className="hidden md:flex" />
+      <CarouselNext className="hidden md:flex" />
     </Carousel>
   );
 };
