@@ -31,7 +31,8 @@ const FeaturedItems = () => {
       setLoading(true);
       setError(null);
       
-      const { data, error } = await supabase
+      // First try to get featured items
+      let { data, error } = await supabase
         .from("items")
         .select(`
           id,
@@ -52,11 +53,41 @@ const FeaturedItems = () => {
             avatar_url
           )
         `)
-        .or("is_featured.eq.true,created_at.gte." + new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString())
+        .eq("is_featured", true)
         .eq("is_available", true)
-        .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(MAX_FEATURED);
+
+      // If no featured items, get recent items instead
+      if (!error && (!data || data.length === 0)) {
+        const { data: recentData, error: recentError } = await supabase
+          .from("items")
+          .select(`
+            id,
+            title,
+            price,
+            price_period,
+            location,
+            condition,
+            images,
+            ad_type,
+            is_featured,
+            created_at,
+            rating,
+            user_id,
+            category_id,
+            profiles:user_id (
+              full_name,
+              avatar_url
+            )
+          `)
+          .eq("is_available", true)
+          .order("created_at", { ascending: false })
+          .limit(MAX_FEATURED);
+        
+        data = recentData;
+        error = recentError;
+      }
 
       if (error) throw error;
       
