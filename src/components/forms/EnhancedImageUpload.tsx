@@ -126,30 +126,32 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
       </div>
 
       <div
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+        className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
           dragActive
-            ? 'border-blue-500 bg-blue-50'
+            ? 'border-primary bg-primary/5 scale-[1.02]'
             : (selectedImages.length + existingImages.length) >= maxFiles
-              ? 'border-gray-200 bg-gray-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-muted bg-muted/20'
+              : 'border-border hover:border-primary/50 hover:bg-accent/30'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <Upload className={`w-12 h-12 mx-auto mb-4 transition-colors ${
+          dragActive ? 'text-primary' : 'text-muted-foreground'
+        }`} />
         {(selectedImages.length + existingImages.length) >= maxFiles ? (
-          <div className="text-gray-500">
+          <div className="text-muted-foreground">
             <AlertCircle className="w-5 h-5 inline mr-2" />
             Maximum {maxFiles} images allowed
           </div>
         ) : (
           <>
-            <p className="text-gray-600 mb-2">
+            <p className="text-foreground mb-2 font-medium">
               Drag and drop images here, or click to select
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               JPG, PNG, WEBP up to {Math.round(maxSizePerFile / (1024 * 1024))}MB each
             </p>
             <Input
@@ -157,7 +159,7 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
               type="file"
               multiple
               accept="image/jpeg,image/png,image/webp"
-              className="mt-4"
+              className="mt-4 cursor-pointer"
               onChange={(e) => handleFileSelection(e.target.files)}
               disabled={(selectedImages.length + existingImages.length) >= maxFiles}
             />
@@ -167,20 +169,23 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
 
       {/* Display existing images (from current item) */}
       {existingImages.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {existingImages.map((imgUrl, idx) => (
             <div key={`existing-img-${idx}`} className="relative group">
-              <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <div className="aspect-square rounded-lg overflow-hidden bg-muted ring-2 ring-primary/20">
                 <img
                   src={imgUrl}
                   alt={`Existing ${idx + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
                 />
               </div>
-              {/* Optionally, add a remove button for existing images */}
-              {/* Disabled for now, as removing saved images should be explicit */}
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-2 rounded-b-lg">
-                <div className="truncate">{imgUrl.split('/').slice(-1)[0]}</div>
+              <div className="absolute top-2 right-2">
+                <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+                  Public
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2 rounded-b-lg">
+                <div className="truncate">Visible to everyone</div>
               </div>
             </div>
           ))}
@@ -189,36 +194,45 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
 
       {/* Display selected new images */}
       {selectedImages.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {selectedImages.map((file, index) => (
             <div key={`${file.name}-${index}`} className="relative group">
-              <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <div className="aspect-square rounded-lg overflow-hidden bg-muted ring-2 ring-accent">
                 <img
                   src={URL.createObjectURL(file)}
                   alt={`Preview ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={() => onRemoveImage(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-7 h-7 flex items-center justify-center hover:bg-destructive/80 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-2 rounded-b-lg">
+              <div className="absolute top-2 left-2">
+                <div className="bg-accent text-accent-foreground text-xs px-2 py-1 rounded-full">
+                  New
+                </div>
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2 rounded-b-lg">
                 <div className="truncate">{file.name}</div>
-                <div>{formatFileSize(file.size)}</div>
+                <div className="flex justify-between items-center">
+                  <span>{formatFileSize(file.size)}</span>
+                  <span className="text-green-300">Will be public</span>
+                </div>
               </div>
 
               {uploadProgress[index] !== undefined && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                  <div className="w-full max-w-[80%]">
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                  <div className="w-full max-w-[80%] space-y-2">
                     <Progress value={uploadProgress[index]} className="h-2" />
-                    <div className="text-white text-xs text-center mt-1">
-                      {uploadProgress[index]}%
+                    <div className="text-white text-xs text-center">
+                      Uploading {uploadProgress[index]}%
                     </div>
                   </div>
                 </div>
@@ -229,9 +243,10 @@ const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
       )}
 
       {selectedImages.length === 0 && existingImages.length === 0 && (
-        <div className="text-center py-4 text-gray-500">
-          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-          <p>At least one image is required for your listing</p>
+        <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg border-2 border-dashed border-muted">
+          <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+          <p className="font-medium mb-1">At least one image is required</p>
+          <p className="text-sm">Images will be publicly visible to all users browsing your listing</p>
         </div>
       )}
     </div>

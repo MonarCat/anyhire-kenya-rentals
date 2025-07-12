@@ -175,32 +175,34 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center py-6 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome to AnyHire</h1>
-          <p className="text-gray-600 mt-2">Join Kenya's premier rental marketplace</p>
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-10 h-10 bg-primary rounded-lg"></div>
+          </div>
+          <h1 className="text-3xl font-bold text-foreground">Welcome to AnyHire</h1>
+          <p className="text-muted-foreground mt-2">Join Kenya's premier rental marketplace</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Get Started</CardTitle>
+        <Card className="shadow-lg border-0">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-xl font-semibold">Get Started</CardTitle>
             <CardDescription>
               Sign in to your account or create a new one
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                <TabsTrigger value="reset">Reset Password</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Sign Up</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="signin">
+              <TabsContent value="signin" className="space-y-4">
                 <form onSubmit={handleSignIn} className="space-y-4">
-                  <div>
-                    <Label htmlFor="signin-email">Email</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email" className="text-sm font-medium">Email</Label>
                     <Input
                       id="signin-email"
                       name="email"
@@ -208,10 +210,11 @@ const Auth = () => {
                       placeholder="your@email.com"
                       required
                       disabled={isLoading}
+                      className="h-11"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="signin-password">Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password" className="text-sm font-medium">Password</Label>
                     <Input
                       id="signin-password"
                       name="password"
@@ -219,11 +222,21 @@ const Auth = () => {
                       placeholder="••••••••"
                       required
                       disabled={isLoading}
+                      className="h-11"
                     />
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsResettingPassword(true)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-green-600 hover:bg-green-700"
+                    className="w-full h-11 bg-primary hover:bg-primary/90"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Signing in...' : 'Sign In'}
@@ -231,10 +244,10 @@ const Auth = () => {
                 </form>
               </TabsContent>
               
-              <TabsContent value="signup">
+              <TabsContent value="signup" className="space-y-4">
                 <form onSubmit={handleSignUp} className="space-y-4">
-                  <div>
-                    <Label htmlFor="signup-fullName">Full Name</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-fullName" className="text-sm font-medium">Full Name</Label>
                     <Input
                       id="signup-fullName"
                       name="fullName"
@@ -243,10 +256,11 @@ const Auth = () => {
                       required
                       disabled={isLoading}
                       minLength={2}
+                      className="h-11"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="signup-email">Email</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email" className="text-sm font-medium">Email</Label>
                     <Input
                       id="signup-email"
                       name="email"
@@ -254,10 +268,11 @@ const Auth = () => {
                       placeholder="your@email.com"
                       required
                       disabled={isLoading}
+                      className="h-11"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="signup-password">Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password" className="text-sm font-medium">Password</Label>
                     <Input
                       id="signup-password"
                       name="password"
@@ -266,11 +281,12 @@ const Auth = () => {
                       minLength={6}
                       required
                       disabled={isLoading}
+                      className="h-11"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                    <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
                   </div>
-                  <div>
-                    <Label htmlFor="signup-confirmPassword">Confirm Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                     <Input
                       id="signup-confirmPassword"
                       name="confirmPassword"
@@ -279,11 +295,18 @@ const Auth = () => {
                       minLength={6}
                       required
                       disabled={isLoading}
+                      className="h-11"
                     />
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded-lg">
+                    <p className="text-xs text-muted-foreground">
+                      📧 You'll receive an email confirmation after creating your account. 
+                      Please check your inbox to verify your email address.
+                    </p>
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-green-600 hover:bg-green-700"
+                    className="w-full h-11 bg-primary hover:bg-primary/90"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Creating account...' : 'Create Account'}
@@ -291,30 +314,43 @@ const Auth = () => {
                 </form>
               </TabsContent>
 
-              <TabsContent value="reset">
-                <form onSubmit={handlePasswordReset} className="space-y-4">
-                  <div>
-                    <Label htmlFor="reset-email">Email</Label>
-                    <Input
-                      id="reset-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      required
-                      disabled={isResettingPassword}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Enter your email to receive a password reset link</p>
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    disabled={isResettingPassword}
-                  >
-                    {isResettingPassword ? 'Sending...' : 'Send Reset Link'}
-                  </Button>
-                </form>
-              </TabsContent>
+              {isResettingPassword && (
+                <div className="mt-6 p-4 bg-muted rounded-lg">
+                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email" className="text-sm font-medium">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                        disabled={isLoading}
+                        className="h-11"
+                      />
+                      <p className="text-xs text-muted-foreground">Enter your email to receive a password reset link</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        type="submit" 
+                        className="flex-1 h-11 bg-primary hover:bg-primary/90"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? 'Sending...' : 'Send Reset Link'}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => setIsResettingPassword(false)}
+                        className="h-11"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </Tabs>
           </CardContent>
         </Card>
